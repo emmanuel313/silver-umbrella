@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NEONX2: Void Runner</title>
+    <style>
+        :root {
+            --neon-blue: #00f2ff;
+            --neon-pink: #ff00cc;
+            --bg-dark: #050505;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-dark);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: white;
+            user-select: none;
+            touch-action: none;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+
+        #ui-layer {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            width: 100%;
+            pointer-events: none;
+            padding: 0 20px;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: space-between;
+            z-index: 10;
+        }
+
+        .stat-box {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 18px;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 242, 255, 0.3);
+            font-weight: 900;
+        }
+
+        #overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            text-align: center;
+        }
+
+        .btn {
+            margin-top: 20px;
+            padding: 18px 50px;
+            font-size: 18px;
+            font-weight: 900;
+            background: var(--neon-blue);
+            color: #000;
+            border: none;
+            border-radius: 50px;
+            text-transform: uppercase;
+            cursor: pointer;
+            width: 240px;
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.3);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--neon-blue);
+            border: 2px solid var(--neon-blue);
+            margin-top: 15px;
+        }
+
+        #stats {
+            margin: 20px 0;
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <canvas id="gameCanvas"></canvas>
+    <div id="ui-layer">
+        <div class="stat-box">SCORE <span id="score-val" style="color: var(--neon-blue);">0</span></div>
+        <div class="stat-box" id="mult-val" style="color: var(--neon-pink);">X1</div>
+    </div>
+    <div id="overlay">
+        <h1 id="title" style="font-size: 48px; margin: 0; color: #fff;">NEON VECTOR</h1>
+        <div id="stats" style="display:none;">SCORE: <span id="final-score" style="color: var(--neon-blue);">0</span></div>
+        
+        <button class="btn" id="start-btn">INITIALIZE</button>
+        <button class="btn btn-secondary" id="download-btn">DOWNLOAD GAME</button>
+        
+        <p style="margin-top: 30px; color: #555; font-size: 12px; text-transform: uppercase; letter-spacing: 2px;">
+            Slide anywhere to fly
+        </p>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d', { alpha: false });
+    const scoreVal = document.getElementById('score-val');
+    const multVal = document.getElementById('mult-val');
+    const finalScoreEl = document.getElementById('final-score');
+    const overlay = document.getElementById('overlay');
+    const startBtn = document.getElementById('start-btn');
+    const downloadBtn = document.getElementById('download-btn');
+    const statsDiv = document.getElementById('stats');
+    const titleH1 = document.getElementById('title');
+
+    const COLORS = { blue: '#00f2ff', pink: '#ff00cc', bg: '#050505' };
+
+    let width, height, dpr;
+    let gameState = 'MENU';
+    let score = 0, multiplier = 1, speed = 7, frame = 0, shake = 0;
+
+    const player = { x: 0, y: 0, targetX: 0, targetY: 0, r: 15, lerp: 0.15 };
+    let obstacles = [];
+    let pickups = [];
+    let shockwaves = [];
+    let gridOffset = 0;
+
+    const MAX_P = 100;
+    const pX = new Float32Array(MAX_P);
+    const pY = new Float32Array(MAX_P);
+    const pVX = new Float32Array(MAX_P);
+    const pVY = new Float32Array(MAX_P);
+    const pLife = new Float32Array(MAX_P);
+
+    function spawnBurst(x, y) {
+        let spawned = 0;
+        for (let i = 0; i < MAX_P && spawned < 15; i++) {
+            if (pLife[i] <= 0) {
+                const angle = Math.random() * Math.PI * 2;
+                const force = 2 + Math.random() * 8;
+                pX[i] = x; pY[i] = y;
+                pVX[i] = Math.cos(angle) * force;
+                pVY[i] = Math.sin(angle) * force;
+                pLife[i] = 1.0;
+                spawned++;
+            }
+        }
+    }
+
+    function resize() {
+        dpr = window.devicePixelRatio || 1;
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        ctx.scale(dpr, dpr);
+        if (gameState === 'MENU') {
+            player.x = player.targetX = width / 2;
+            player.y = player.targetY = height * 0.7;
+        }
+    }
+
+    function handleInput(e) {
+        const t = e.touches ? e.touches[0] : e;
+        const rect = canvas.getBoundingClientRect();
+        player.targetX = t.clientX - rect.left;
+        player.targetY = t.clientY - rect.top;
+    }
+
+    function startGame() {
+        score = 0; multiplier = 1; speed = 7; frame = 0; shake = 0;
+        obstacles = []; pickups = []; shockwaves = [];
+        pLife.fill(0);
+        player.x = player.targetX = width / 2;
+        player.y = player.targetY = height * 0.7;
+        overlay.style.display = 'none';
+        gameState = 'PLAYING';
+    }
+
+    function endGame() {
+        gameState = 'GAMEOVER';
+        overlay.style.display = 'flex';
+        titleH1.innerText = "CRASHED";
+        statsDiv.style.display = 'block';
+        finalScoreEl.innerText = Math.floor(score);
+        startBtn.innerText = "RETRY";
+        downloadBtn.style.display = 'inline-block';
+        shake = 20;
+    }
+
+    function update() {
+        if (gameState !== 'PLAYING') return;
+
+        frame++;
+        speed += 0.001;
+        score += (speed / 10) * multiplier;
+        scoreVal.innerText = Math.floor(score);
+        multVal.innerText = `X${multiplier}`;
+
+        player.x += (player.targetX - player.x) * player.lerp;
+        player.y += (player.targetY - player.y) * player.lerp;
+        gridOffset = (gridOffset + speed) % 60;
+
+        for (let i = obstacles.length - 1; i >= 0; i--) {
+            const o = obstacles[i];
+            o.y += speed;
+            const cx = Math.max(o.x, Math.min(player.x, o.x + o.w));
+            const cy = Math.max(o.y, Math.min(player.y, o.y + o.h));
+            if (Math.hypot(player.x - cx, player.y - cy) < player.r - 2) endGame();
+            if (o.y > height + 50) obstacles.splice(i, 1);
+        }
+
+        for (let i = pickups.length - 1; i >= 0; i--) {
+            const p = pickups[i];
+            p.y += speed * 0.7;
+            if (Math.hypot(player.x - p.x, player.y - p.y) < p.s + player.r) {
+                multiplier++; shake = 10;
+                spawnBurst(p.x, p.y);
+                shockwaves.push({ x: p.x, y: p.y, r: 10, a: 1 });
+                pickups.splice(i, 1);
+            } else if (p.y > height + 50) {
+                pickups.splice(i, 1);
+                multiplier = Math.max(1, multiplier - 1);
+            }
+        }
+
+        for (let i = 0; i < MAX_P; i++) if (pLife[i] > 0) {
+            pX[i] += pVX[i]; pY[i] += pVY[i]; pLife[i] -= 0.03;
+        }
+
+        for (let i = shockwaves.length - 1; i >= 0; i--) {
+            const s = shockwaves[i]; s.r += 8; s.a -= 0.05;
+            if (s.a <= 0) shockwaves.splice(i, 1);
+        }
+
+        if (frame % 40 === 0) obstacles.push({ x: Math.random()*(width-width*0.3), y: -50, w: width*0.3, h: 20 });
+        if (frame % 70 === 0) pickups.push({ x: 30+Math.random()*(width-60), y: -50, s: 25 });
+        if (shake > 0) shake *= 0.9;
+    }
+
+    function draw() {
+        ctx.fillStyle = COLORS.bg;
+        ctx.fillRect(0, 0, width, height);
+
+        ctx.save();
+        if (shake > 0.5) ctx.translate((Math.random()-0.5)*shake, (Math.random()-0.5)*shake);
+
+        ctx.strokeStyle = '#151515';
+        for (let x = 0; x < width; x += width / 6) {
+            ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
+        }
+        for (let y = gridOffset; y < height; y += 60) {
+            ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke();
+        }
+
+        ctx.fillStyle = COLORS.pink;
+        obstacles.forEach(o => ctx.fillRect(o.x, o.y, o.w, o.h));
+
+        ctx.strokeStyle = COLORS.blue;
+        ctx.lineWidth = 3;
+        pickups.forEach(p => ctx.strokeRect(p.x - p.s/2, p.y - p.s/2, p.s, p.s));
+
+        for (let i = 0; i < MAX_P; i++) if (pLife[i] > 0) {
+            ctx.globalAlpha = pLife[i];
+            ctx.fillStyle = COLORS.blue;
+            ctx.fillRect(pX[i]-2, pY[i]-2, 4, 4);
+        }
+        ctx.globalAlpha = 1;
+
+        shockwaves.forEach(s => {
+            ctx.strokeStyle = `rgba(0, 242, 255, ${s.a})`;
+            ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2); ctx.stroke();
+        });
+
+        if (gameState !== 'GAMEOVER') {
+            ctx.shadowBlur = 15; ctx.shadowColor = COLORS.blue;
+            ctx.fillStyle = '#fff';
+            ctx.beginPath(); ctx.arc(player.x, player.y, player.r, 0, Math.PI*2); ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = COLORS.blue;
+            ctx.beginPath(); ctx.arc(player.x, player.y, player.r*0.5, 0, Math.PI*2); ctx.fill();
+        }
+        ctx.restore();
+    }
+
+    function loop() {
+        update();
+        draw();
+        requestAnimationFrame(loop);
+    }
+
+    // Function to handle downloading the HTML file
+    function downloadGame() {
+        const htmlContent = document.documentElement.outerHTML;
+        const blob = new Blob([htmlContent], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'neon_vector.html';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    window.onload = () => {
+        resize();
+        window.addEventListener('resize', resize);
+        const handle = (e) => { if(gameState === 'PLAYING') { e.preventDefault(); handleInput(e); } };
+        canvas.addEventListener('mousemove', handle);
+        canvas.addEventListener('touchstart', handle, {passive: false});
+        canvas.addEventListener('touchmove', handle, {passive: false});
+        
+        startBtn.onclick = (e) => { e.stopPropagation(); startGame(); };
+        downloadBtn.onclick = (e) => { e.stopPropagation(); downloadGame(); };
+        
+        loop();
+    };
+</script>
+</body>
+</html>
