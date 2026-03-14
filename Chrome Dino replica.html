@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Chrome Dino — Clone</title>
+  <style>
+    :root{--bg:#f7f7f7;--ground:#555;--dino:#222;--ob:#2b2b2b}
+    html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial}
+    body{background:linear-gradient(#fff,var(--bg));display:flex;align-items:center;justify-content:center}
+    .wrap{width:900px;max-width:95%;background:#fff;border-radius:10px;box-shadow:0 6px 30px rgba(0,0,0,.08);padding:20px}
+    canvas{display:block;background:linear-gradient(#eaf2ff,#fff);width:100%;height:150px;border-radius:6px}
+    .info{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+    .btn{padding:8px 12px;border-radius:6px;border:0;background:#2b79ff;color:#fff;cursor:pointer}
+    .muted{color:#666;font-size:14px}
+    .small{font-size:13px;color:#333}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <canvas id="game" width="900" height="150"></canvas>
+    <div class="info">
+      <div class="small">Press <strong>Space</strong> or <strong>↑</strong> to jump — Tap on mobile</div>
+      <div>
+        <button id="restart" class="btn">Restart</button>
+        <span id="score" class="muted" style="margin-left:12px">Score: 0</span>
+      </div>
+    </div>
+  </div>
+
+<script>
+/*
+ Simple Chrome-Dino style game (single-file)
+ Controls: Space or ArrowUp to jump. Tap the canvas on mobile.
+ Save as .html and open in a browser.
+*/
+(() => {
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width; const H = canvas.height;
+
+  // Game variables
+  let running = true;
+  let speed = 6; // ground & obstacle speed
+  let gravity = 0.6;
+  let obstacles = [];
+  let frame = 0;
+  let score = 0;
+  let best = 0;
+  let gameOver = false;
+
+  // Dino (player) object
+  const dino = {
+    x: 50,
+    y: H - 40,
+    w: 40,
+    h: 40,
+    vy: 0,
+    grounded: true,
+    draw() {
+      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--dino') || '#222';
+      ctx.fillRect(this.x, this.y - this.h, this.w, this.h);
+      // simple eye
+      ctx.fillStyle = '#fff'; ctx.fillRect(this.x + this.w - 14, this.y - this.h + 8, 6, 6);
+    },
+    jump() {
+      if (this.grounded && !gameOver) {
+        this.vy = -12;
+        this.grounded = false;
+      }
+    },
+    update() {
+      this.vy += gravity;
+      this.y += this.vy;
+      const groundY = H - 10;
+      if (this.y >= groundY) {
+        this.y = groundY;
+        this.vy = 0;
+        this.grounded = true;
+      }
+    }
+  };
+
+  // Ground drawing
+  function drawGround() {
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--ground') || '#555';
+    ctx.fillRect(0, H - 10, W, 10);
+  }
+
+  // Obstacle factory
+  function spawnObstacle() {
+    const height = 20 + Math.random() * 30;
+    const w = 12 + Math.random() * 18;
+    obstacles.push({x: W + 20, y: H - 10, w, h: height});
+  }
+
+  // Reset game
+  function reset() {
+    obstacles = [];
+    frame = 0;
+    score = 0;
+    speed = 6;
+    gameOver = false;
+    dino.y = H - 40; dino.vy = 0; dino.grounded = true;
+  }
+
+  // Collision check
+  function checkCollision(obs) {
+    const dx = dino.x + dino.w > obs.x && dino.x < obs.x + obs.w;
+    const dy = dino.y - dino.h < obs.y && dino.y > obs.y - obs.h;
+    return dx && dy;
+  }
+
+  // Main loop
+  function loop() {
+    if (!running) return;
+    frame++;
+    // increase difficulty over time
+    if (frame % 300 === 0) speed += 0.5;
+    // spawn obstacles occasionally
+    if (frame % Math.max(60, 100 - Math.floor(score/100)) === 0) spawnObstacle();
+
+    ctx.clearRect(0,0,W,H);
+
+    // background parallax (simple)
+    ctx.fillStyle = '#eaf3ff'; ctx.fillRect(0,0,W,H - 10);
+
+    // update and draw dino
+    dino.update(); dino.draw();
+
+    // update obstacles
+    for (let i = obstacles.length -1; i >=0; i--) {
+      const o = obstacles[i];
+      o.x -= speed;
+      // draw obstacle
+      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--ob') || '#2b2b2b';
+      ctx.fillRect(o.x, o.y - o.h, o.w, o.h);
+
+      // offscreen
+      if (o.x + o.w < 0) obstacles.splice(i,1);
+
+      // collision
+      if (!gameOver && checkCollision(o)) {
+        gameOver = true;
+        best = Math.max(best, score);
+      }
+    }
+
+    // draw ground
+    drawGround();
+
+    // update score
+    if (!gameOver) score += 1;
+    document.getElementById('score').textContent = `Score: ${score}  (Best: ${best})`;
+
+    // game over message
+    if (gameOver) {
+      ctx.fillStyle = 'rgba(0,0,0,0.6)';
+      ctx.fillRect(W/2 - 150, H/2 - 30, 300, 60);
+      ctx.fillStyle = '#fff'; ctx.font = '18px system-ui'; ctx.textAlign = 'center';
+      ctx.fillText('Game Over — Click Restart or press Space', W/2, H/2 + 6);
+    }
+
+    requestAnimationFrame(loop);
+  }
+
+  // Input handlers
+  window.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' || e.code === 'ArrowUp') {
+      e.preventDefault();
+      if (gameOver) reset();
+      dino.jump();
+    }
+    if (e.code === 'KeyR') reset();
+  });
+
+  // Touch / click to jump
+  canvas.addEventListener('touchstart', (e) => { e.preventDefault(); if (gameOver) reset(); dino.jump(); }, {passive:false});
+  canvas.addEventListener('mousedown', (e) => { if (gameOver) reset(); dino.jump(); });
+
+  document.getElementById('restart').addEventListener('click', reset);
+
+  // Start
+  reset();
+  loop();
+})();
+</script>
+</body>
+</html>
