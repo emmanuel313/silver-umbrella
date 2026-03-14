@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Neural Network Simulation</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --positive-color: #10b981; /* Green/Cyan for positive */
+            --negative-color: #ef4444; /* Red for negative */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        header {
+            background-color: var(--panel-bg);
+            padding: 15px 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Sidebar Controls */
+        .sidebar {
+            width: 300px;
+            background-color: var(--panel-bg);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+            border-right: 1px solid #334155;
+        }
+
+        .control-group {
+            background-color: #0f172a;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+        }
+
+        .control-group h3 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .input-slider {
+            margin-bottom: 12px;
+        }
+        
+        .input-slider:last-child {
+            margin-bottom: 0;
+        }
+
+        .input-slider label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+            accent-color: var(--accent);
+        }
+
+        .btn {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: background-color 0.2s;
+            width: 100%;
+            margin-bottom: 8px;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+        }
+
+        .btn-outline:hover {
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+
+        .instructions {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* Canvas Area */
+        .canvas-container {
+            flex: 1;
+            position: relative;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+        }
+
+        /* Tooltip */
+        #tooltip {
+            position: absolute;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid #334155;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            color: white;
+            z-index: 100;
+            white-space: nowrap;
+            transform: translate(-50%, -100%);
+            margin-top: -10px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .layout {
+                flex-direction: column-reverse;
+            }
+            .sidebar {
+                width: 100%;
+                height: 40%;
+                border-right: none;
+                border-top: 1px solid #334155;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Interactive Neural Network</h1>
+        <div style="font-size: 0.85rem; color: #94a3b8;">Activation: Sigmoid</div>
+    </header>
+
+    <div class="layout">
+        <div class="sidebar">
+            <div class="control-group">
+                <h3>Input Values</h3>
+                <div class="input-slider">
+                    <label><span>Input 1</span> <span id="val-in-0">0.50</span></label>
+                    <input type="range" id="slider-in-0" min="0" max="1" step="0.01" value="0.5">
+                </div>
+                <div class="input-slider">
+                    <label><span>Input 2</span> <span id="val-in-1">0.80</span></label>
+                    <input type="range" id="slider-in-1" min="0" max="1" step="0.01" value="0.8">
+                </div>
+                <div class="input-slider">
+                    <label><span>Input 3</span> <span id="val-in-2">0.20</span></label>
+                    <input type="range" id="slider-in-2" min="0" max="1" step="0.01" value="0.2">
+                </div>
+                <div class="input-slider">
+                    <label><span>Input 4</span> <span id="val-in-3">0.60</span></label>
+                    <input type="range" id="slider-in-3" min="0" max="1" step="0.01" value="0.6">
+                </div>
+                <div class="input-slider">
+                    <label><span>Input 5</span> <span id="val-in-4">0.40</span></label>
+                    <input type="range" id="slider-in-4" min="0" max="1" step="0.01" value="0.4">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Simulation Controls</h3>
+                <button class="btn" id="btn-feedforward">Feed Forward (Play)</button>
+                <button class="btn btn-outline" id="btn-step">Step Forward</button>
+                <button class="btn btn-outline" id="btn-randomize" style="margin-top: 10px;">Randomize Weights</button>
+            </div>
+
+            <div class="instructions">
+                <strong>How it works:</strong>
+                <ul style="margin-left: 15px; margin-top: 5px;">
+                    <li>Adjust sliders to change inputs.</li>
+                    <li><strong>Click on any connection line</strong> to adjust its weight manually.</li>
+                    <li>Green connections are positive weights; Red are negative.</li>
+                    <li>Nodes light up based on their activation value (0 to 1).</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="canvas-container">
+            <div id="tooltip"></div>
+            <canvas id="networkCanvas"></canvas>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * SIMULATION LOGIC & MATH
+         */
+        
+        // Sigmoid Activation Function
+        function sigmoid(x) {
+            return 1 / (1 + Math.exp(-x));
+        }
+
+        // Configuration
+        const config = {
+            layers: [5, 8, 8, 4], // 5 inputs, 8 hidden, 8 hidden, 4 outputs
+            nodeRadius: 18,
+            pulseSpeed: 0.025, // Speed of signal animation
+            colors: {
+                positive: '#10b981',
+                negative: '#ef4444',
+                nodeBg: '#1e293b',
+                nodeBorder: '#475569',
+                nodeActive: '#e2e8f0',
+                pulse: '#ffffff'
+            }
+        };
+
+        // Data Structures
+        let nodes = [];
+        let connections = [];
+        let pulses = [];
+        
+        // Animation State
+        let animState = {
+            isPlaying: false,
+            isStepping: false,
+            currentLayer: 0,
+            pulsesFinished: 0,
+            expectedPulses: 0
+        };
+
+        class Node {
+            constructor(layerIndex, nodeIndex, isInput = false) {
+                this.layerIndex = layerIndex;
+                this.nodeIndex = nodeIndex;
+                this.isInput = isInput;
+                this.value = 0; // Final activation value (0 to 1)
+                this.sum = 0;   // Accumulator during propagation
+                this.bias = isInput ? 0 : (Math.random() * 2 - 1); // Bias between -1 and 1
+                this.x = 0; // Set during render
+                this.y = 0; // Set during render
+            }
+        }
+
+        class Connection {
+            constructor(fromNode, toNode) {
+                this.from = fromNode;
+                this.to = toNode;
+                this.weight = Math.random() * 2 - 1; // Between -1 and 1
+                this.isHovered = false;
+            }
+        }
+
+        class Pulse {
+            constructor(connection) {
+                this.connection = connection;
+                this.progress = 0; // 0.0 to 1.0
+                // Signal strength carries the weighted value
+                this.signal = this.connection.from.value * this.connection.weight;
+            }
+        }
+
+        // Initialize the network topology
+        function initNetwork() {
+            nodes = [];
+            connections = [];
+            pulses = [];
+
+            // Create Nodes
+            for (let l = 0; l < config.layers.length; l++) {
+                let layerNodes = [];
+                let isInput = (l === 0);
+                for (let n = 0; n < config.layers[l]; n++) {
+                    let node = new Node(l, n, isInput);
+                    if (isInput) {
+                        // Set initial values from DOM sliders
+                        node.value = parseFloat(document.getElementById(`slider-in-${n}`).value);
+                    }
+                    layerNodes.push(node);
+                }
+                nodes.push(layerNodes);
+            }
+
+            // Create Connections
+            for (let l = 0; l < nodes.length - 1; l++) {
+                let currentLayer = nodes[l];
+                let nextLayer = nodes[l+1];
+                
+                for (let fromNode of currentLayer) {
+                    for (let toNode of nextLayer) {
+                        connections.push(new Connection(fromNode, toNode));
+                    }
+                }
+            }
+        }
+
+        /**
+         * RENDERING LOGIC
+         */
+        const canvas = document.getElementById('networkCanvas');
+        const ctx = canvas.getContext('2d');
+        const tooltip = document.getElementById('tooltip');
+
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            calculateNodePositions();
+            draw();
+        }
+
+        function calculateNodePositions() {
+            const width = canvas.width;
+            const height = canvas.height;
+            const numLayers = nodes.length;
+            
+            // X-spacing
+            const paddingX = width * 0.15;
+            const stepX = (width - 2 * paddingX) / (numLayers - 1);
+
+            for (let l = 0; l < numLayers; l++) {
+                const layerNodes = nodes[l];
+                const numNodes = layerNodes.length;
+                
+                // Y-spacing
+                const paddingY = height * 0.12;
+                const stepY = numNodes > 1 ? (height - 2 * paddingY) / (numNodes - 1) : 0;
+                
+                // Center vertically if only 1 node
+                const startY = numNodes > 1 ? paddingY : height / 2;
+
+                for (let n = 0; n < numNodes; n++) {
+                    layerNodes[n].x = paddingX + l * stepX;
+                    layerNodes[n].y = startY + n * stepY;
+                }
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw Labels
+            ctx.fillStyle = 'rgba(255,255,255,0.3)';
+            ctx.font = '14px sans-serif';
+            ctx.textAlign = 'center';
+            for (let l = 0; l < nodes.length; l++) {
+                if (nodes[l].length > 0) {
+                    let label = "";
+                    if (l === 0) label = "Input Layer";
+                    else if (l === nodes.length - 1) label = "Output Layer";
+                    else label = "Hidden Layer " + l;
+                    ctx.fillText(label, nodes[l][0].x, 30);
+                }
+            }
+
+            // Draw Connections
+            for (let conn of connections) {
+                ctx.beginPath();
+                ctx.moveTo(conn.from.x, conn.from.y);
+                ctx.lineTo(conn.to.x, conn.to.y);
+                
+                // Color and thickness based on weight
+                let absWeight = Math.abs(conn.weight);
+                ctx.lineWidth = Math.max(0.5, absWeight * 4);
+                
+                if (conn.isHovered) {
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth += 2;
+                } else {
+                    // Interpolate opacity based on weight
+                    let alpha = Math.max(0.15, absWeight * 0.8);
+                    if (conn.weight >= 0) {
+                        ctx.strokeStyle = `rgba(16, 185, 129, ${alpha})`; // Positive
+                    } else {
+                        ctx.strokeStyle = `rgba(239, 68, 68, ${alpha})`; // Negative
+                    }
+                }
+                ctx.stroke();
+            }
+
+            // Draw Pulses
+            for (let pulse of pulses) {
+                let x = pulse.connection.from.x + (pulse.connection.to.x - pulse.connection.from.x) * pulse.progress;
+                let y = pulse.connection.from.y + (pulse.connection.to.y - pulse.connection.from.y) * pulse.progress;
+                
+                ctx.beginPath();
+                ctx.arc(x, y, 4, 0, Math.PI * 2);
+                
+                // Pulse color reflects the signal it's carrying
+                if (pulse.signal > 0) {
+                    ctx.fillStyle = config.colors.positive;
+                    ctx.shadowColor = config.colors.positive;
+                } else if (pulse.signal < 0) {
+                    ctx.fillStyle = config.colors.negative;
+                    ctx.shadowColor = config.colors.negative;
+                } else {
+                    ctx.fillStyle = '#94a3b8';
+                    ctx.shadowColor = 'transparent';
+                }
+                
+                ctx.shadowBlur = 10;
+                ctx.fill();
+                ctx.shadowBlur = 0; // Reset shadow
+            }
+
+            // Draw Nodes
+            for (let layer of nodes) {
+                for (let node of layer) {
+                    // Outer border
+                    ctx.beginPath();
+                    ctx.arc(node.x, node.y, config.nodeRadius, 0, Math.PI * 2);
+                    ctx.fillStyle = config.colors.nodeBg;
+                    ctx.fill();
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = config.colors.nodeBorder;
+                    ctx.stroke();
+
+                    // Inner fill (activation)
+                    if (node.value > 0) {
+                        ctx.beginPath();
+                        // Radius reflects activation value
+                        let innerRadius = (config.nodeRadius - 4) * node.value;
+                        ctx.arc(node.x, node.y, Math.max(0, innerRadius), 0, Math.PI * 2);
+                        ctx.fillStyle = config.colors.nodeActive;
+                        ctx.fill();
+                    }
+
+                    // Value text - Adding stroke to fix visibility over white dots
+                    ctx.font = 'bold 11px monospace';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    
+                    ctx.lineWidth = 3;
+                    ctx.strokeStyle = config.colors.nodeBg; // Dark stroke
+                    ctx.strokeText(node.value.toFixed(2), node.x, node.y);
+                    
+                    ctx.fillStyle = '#ffffff'; // White text body
+                    ctx.fillText(node.value.toFixed(2), node.x, node.y);
+                }
+            }
+        }
+
+        /**
+         * ANIMATION & PROPAGATION LOGIC
+         */
+        
+        function updateAnimation() {
+            if (!animState.isPlaying && !animState.isStepping) {
+                draw();
+                requestAnimationFrame(updateAnimation);
+                return;
+            }
+
+            // Move existing pulses
+            for (let i = pulses.length - 1; i >= 0; i--) {
+                let pulse = pulses[i];
+                pulse.progress += config.pulseSpeed;
+
+                // Has pulse reached destination?
+                if (pulse.progress >= 1.0) {
+                    // Add signal to target node's sum
+                    pulse.connection.to.sum += pulse.signal;
+                    pulses.splice(i, 1);
+                    animState.pulsesFinished++;
+                }
+            }
+
+            // Check if current layer propagation is done
+            if (animState.pulsesFinished === animState.expectedPulses && animState.expectedPulses > 0) {
+                // Apply activation to target layer
+                let targetLayer = nodes[animState.currentLayer + 1];
+                for (let node of targetLayer) {
+                    node.value = sigmoid(node.sum + node.bias);
+                }
+
+                // Move to next layer
+                animState.currentLayer++;
+                
+                if (animState.currentLayer < nodes.length - 1) {
+                    // Start next layer pulses if not stepping, or wait if stepping
+                    if (!animState.isStepping) {
+                        spawnPulsesForLayer(animState.currentLayer);
+                    } else {
+                        // Pause for next step
+                        animState.isPlaying = false;
+                        animState.isStepping = false;
+                    }
+                } else {
+                    // Network propagation complete
+                    animState.isPlaying = false;
+                    animState.isStepping = false;
+                }
+            }
+
+            draw();
+            requestAnimationFrame(updateAnimation);
+        }
+
+        function spawnPulsesForLayer(layerIndex) {
+            pulses = [];
+            animState.pulsesFinished = 0;
+            animState.expectedPulses = 0;
+
+            // Reset target nodes sums
+            let targetLayer = nodes[layerIndex + 1];
+            for (let node of targetLayer) {
+                node.sum = 0;
+            }
+
+            for (let conn of connections) {
+                if (conn.from.layerIndex === layerIndex) {
+                    pulses.push(new Pulse(conn));
+                    animState.expectedPulses++;
+                }
+            }
+        }
+
+        function startPropagation(isStep = false) {
+            // If starting fresh
+            if (!animState.isPlaying && !animState.isStepping && pulses.length === 0) {
+                animState.currentLayer = 0;
+                
+                // Ensure inputs are fresh
+                for (let n = 0; n < nodes[0].length; n++) {
+                    nodes[0][n].value = parseFloat(document.getElementById(`slider-in-${n}`).value);
+                }
+
+                // Reset all downstream node values
+                for (let l = 1; l < nodes.length; l++) {
+                    for (let node of nodes[l]) {
+                        node.value = 0;
+                        node.sum = 0;
+                    }
+                }
+                
+                spawnPulsesForLayer(0);
+            } else if (isStep && pulses.length === 0 && animState.currentLayer < nodes.length - 1) {
+                // Continue step
+                spawnPulsesForLayer(animState.currentLayer);
+            }
+
+            if (isStep) {
+                animState.isStepping = true;
+                animState.isPlaying = false;
+            } else {
+                animState.isPlaying = true;
+                animState.isStepping = false;
+            }
+        }
+
+        /**
+         * INTERACTION & EVENTS
+         */
+
+        // Utility to find distance from point to line segment
+        function distToSegmentSquared(p, v, w) {
+            function sqr(x) { return x * x; }
+            function dist2(v, w) { return sqr(v.x - w.x) + sqr(v.y - w.y); }
+            let l2 = dist2(v, w);
+            if (l2 === 0) return dist2(p, v);
+            let t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
+            t = Math.max(0, Math.min(1, t));
+            return dist2(p, { x: v.x + t * (w.x - v.x), y: v.y + t * (w.y - v.y) });
+        }
+
+        function getHoveredConnection(mouseX, mouseY) {
+            let p = { x: mouseX, y: mouseY };
+            for (let conn of connections) {
+                let distSq = distToSegmentSquared(p, conn.from, conn.to);
+                if (distSq < 40) { // Approx 6px radius tolerance
+                    return conn;
+                }
+            }
+            return null;
+        }
+
+        function getHoveredNode(mouseX, mouseY) {
+            for (let layer of nodes) {
+                for (let node of layer) {
+                    let dx = mouseX - node.x;
+                    let dy = mouseY - node.y;
+                    if (dx*dx + dy*dy <= config.nodeRadius * config.nodeRadius) {
+                        return node;
+                    }
+                }
+            }
+            return null;
+        }
+
+        // Canvas Mouse Events
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            // Reset hover states
+            connections.forEach(c => c.isHovered = false);
+
+            let hoveredConn = getHoveredConnection(mouseX, mouseY);
+            let hoveredNode = getHoveredNode(mouseX, mouseY);
+
+            if (hoveredConn) {
+                hoveredConn.isHovered = true;
+                canvas.style.cursor = 'pointer';
+                tooltip.style.opacity = 1;
+                tooltip.style.left = e.clientX + 'px';
+                tooltip.style.top = (e.clientY - 15) + 'px';
+                tooltip.innerHTML = `Weight: <strong>${hoveredConn.weight.toFixed(2)}</strong><br><small>Click to increase</small>`;
+            } else if (hoveredNode) {
+                canvas.style.cursor = 'help';
+                tooltip.style.opacity = 1;
+                tooltip.style.left = e.clientX + 'px';
+                tooltip.style.top = (e.clientY - 15) + 'px';
+                if (hoveredNode.isInput) {
+                    tooltip.innerHTML = `Input Node<br>Value: ${hoveredNode.value.toFixed(2)}`;
+                } else {
+                    tooltip.innerHTML = `Bias: ${hoveredNode.bias.toFixed(2)}<br>Sum: ${hoveredNode.sum.toFixed(2)}<br>Output = σ(Sum + Bias)`;
+                }
+            } else {
+                canvas.style.cursor = 'crosshair';
+                tooltip.style.opacity = 0;
+            }
+            
+            if (!animState.isPlaying && !animState.isStepping) draw();
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            connections.forEach(c => c.isHovered = false);
+            tooltip.style.opacity = 0;
+            if (!animState.isPlaying && !animState.isStepping) draw();
+        });
+
+        // Handle Click / Touch to change weights
+        function handleCanvasTap(e) {
+            const rect = canvas.getBoundingClientRect();
+            let clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            let clientY = e.clientY || (e.touches && e.touches[0].clientY);
+            
+            const mouseX = clientX - rect.left;
+            const mouseY = clientY - rect.top;
+
+            let hoveredConn = getHoveredConnection(mouseX, mouseY);
+            if (hoveredConn) {
+                // Increment weight, wrap around at 1.0 to -1.0
+                hoveredConn.weight += 0.25;
+                if (hoveredConn.weight > 1.05) {
+                    hoveredConn.weight = -1.0;
+                }
+                
+                // Update tooltip
+                tooltip.innerHTML = `Weight: <strong>${hoveredConn.weight.toFixed(2)}</strong><br><small>Click to increase</small>`;
+                
+                // If network isn't animating, clear downstream and redraw
+                if (!animState.isPlaying && !animState.isStepping && animState.currentLayer === nodes.length - 1) {
+                   draw();
+                }
+            }
+        }
+
+        canvas.addEventListener('mousedown', handleCanvasTap);
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault(); // Prevent scrolling while tapping canvas
+            handleCanvasTap(e);
+        }, {passive: false});
+
+        // DOM Controls
+        for (let i = 0; i < config.layers[0]; i++) {
+            let slider = document.getElementById(`slider-in-${i}`);
+            if (slider) {
+                slider.addEventListener('input', (e) => {
+                    let val = parseFloat(e.target.value);
+                    document.getElementById(`val-in-${i}`).innerText = val.toFixed(2);
+                    nodes[0][i].value = val;
+                    
+                    // If idle and finished, clear the network to show it needs recalculation
+                    if (!animState.isPlaying && !animState.isStepping && pulses.length === 0) {
+                         for (let l = 1; l < nodes.length; l++) {
+                            for (let node of nodes[l]) { node.value = 0; }
+                        }
+                    }
+                    if (!animState.isPlaying && !animState.isStepping) draw();
+                });
+            }
+        }
+
+        document.getElementById('btn-feedforward').addEventListener('click', () => {
+            startPropagation(false);
+        });
+
+        document.getElementById('btn-step').addEventListener('click', () => {
+            startPropagation(true);
+        });
+
+        document.getElementById('btn-randomize').addEventListener('click', () => {
+            // Randomize weights and biases
+            connections.forEach(c => c.weight = Math.random() * 2 - 1);
+            for (let l = 1; l < nodes.length; l++) {
+                nodes[l].forEach(n => n.bias = Math.random() * 2 - 1);
+            }
+            
+            // Stop animation and reset network visually
+            pulses = [];
+            animState.isPlaying = false;
+            animState.isStepping = false;
+            animState.currentLayer = 0;
+            
+            for (let l = 1; l < nodes.length; l++) {
+                nodes[l].forEach(n => { n.value = 0; n.sum = 0; });
+            }
+            draw();
+        });
+
+        window.addEventListener('resize', resizeCanvas);
+
+        // Initialization
+        initNetwork();
+        resizeCanvas(); // This also calls draw()
+        requestAnimationFrame(updateAnimation);
+
+    </script>
+</body>
+</html>

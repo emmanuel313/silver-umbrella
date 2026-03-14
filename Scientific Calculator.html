@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Computational Scientific Calculator</title>
+    
+    <!-- Tailwind CSS for Structural Architecture -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Math.js for Symbolic Computation & BigNumber Logic -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
+    
+    <!-- KaTeX for Mathematical Typesetting -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --accent: #38bdf8;
+            --text-main: #f8fafc;
+            --btn-num: #334155;
+            --btn-op: #0284c7;
+            --btn-calc: #059669;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            font-family: 'Inter', system-ui, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .calculator-chassis {
+            background-color: var(--bg-secondary);
+            border-radius: 1.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 480px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .display-screen {
+            background: #0b1120;
+            padding: 1.5rem;
+            min-height: 140px;
+            border-bottom: 2px solid var(--accent);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: flex-end;
+            word-break: break-all;
+        }
+
+        #latex-render {
+            font-size: 1.5rem;
+            min-height: 2.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--accent);
+            overflow-x: auto;
+            width: 100%;
+            text-align: right;
+        }
+
+        .raw-input {
+            font-size: 1rem;
+            color: #94a3b8;
+            letter-spacing: 1px;
+        }
+
+        .calc-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.5rem;
+            padding: 1.5rem;
+        }
+
+        .btn {
+            padding: 1rem 0.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            font-size: 1.125rem;
+            cursor: pointer;
+            transition: all 0.15s ease-in-out;
+            border: none;
+            user-select: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btn:active { transform: scale(0.95); }
+        .btn-num { background-color: var(--btn-num); color: white; }
+        .btn-num:hover { background-color: #475569; }
+        
+        .btn-op { background-color: var(--btn-op); color: white; }
+        .btn-op:hover { background-color: #0369a1; }
+
+        .btn-action { background-color: #ef4444; color: white; }
+        .btn-action:hover { background-color: #dc2626; }
+
+        .btn-eval { background-color: var(--btn-calc); color: white; grid-column: span 2; }
+        .btn-eval:hover { background-color: #047857; }
+
+        .tab-bar {
+            display: flex;
+            background: #0f172a;
+            border-bottom: 1px solid #334155;
+        }
+
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 0.75rem;
+            font-size: 0.875rem;
+            cursor: pointer;
+            color: #94a3b8;
+            transition: color 0.2s, background 0.2s;
+        }
+
+        .tab.active {
+            color: var(--accent);
+            background: var(--bg-secondary);
+            border-bottom: 2px solid var(--accent);
+        }
+
+        .panel { display: none; }
+        .panel.active { display: block; }
+
+        /* Calculus Panel Styling */
+        .calculus-form {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .input-group label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #94a3b8;
+            letter-spacing: 0.05em;
+        }
+
+        .sci-input {
+            background: #0f172a;
+            border: 1px solid #334155;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            color: white;
+            font-family: monospace;
+            width: 100%;
+        }
+
+        .sci-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .loader {
+            border: 3px solid #1e293b;
+            border-top: 3px solid var(--accent);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* History Panel */
+        .history-list {
+            padding: 1rem;
+            max-height: 350px;
+            overflow-y: auto;
+        }
+        .history-item {
+            padding: 0.75rem;
+            border-bottom: 1px solid #334155;
+            cursor: pointer;
+        }
+        .history-item:hover { background: rgba(255,255,255,0.05); }
+        .history-expr { color: #94a3b8; font-size: 0.875rem; }
+        .history-res { color: var(--accent); font-weight: bold; margin-top: 0.25rem; }
+    </style>
+</head>
+<body>
+
+    <div class="calculator-chassis max-w-md w-full mx-4">
+        <!-- Hardware Display -->
+        <div class="display-screen">
+            <div id="latex-render"></div>
+            <div id="raw-display" class="raw-input">0</div>
+        </div>
+
+        <!-- Mode Selectors -->
+        <div class="tab-bar">
+            <div class="tab active" onclick="switchTab('standard')">Standard</div>
+            <div class="tab" onclick="switchTab('calculus')">Calculus Worker</div>
+            <div class="tab" onclick="switchTab('history')">Session History</div>
+        </div>
+
+        <!-- Standard / Scientific Panel -->
+        <div id="panel-standard" class="panel active">
+            <div class="calc-grid">
+                <!-- Row 1: Scientific Functions -->
+                <button class="btn btn-op" onclick="append('sin(')">sin</button>
+                <button class="btn btn-op" onclick="append('cos(')">cos</button>
+                <button class="btn btn-op" onclick="append('tan(')">tan</button>
+                <button class="btn btn-op" onclick="append('pi')">π</button>
+                
+                <!-- Row 2 -->
+                <button class="btn btn-op" onclick="append('sqrt(')">√</button>
+                <button class="btn btn-op" onclick="append('^')">x^y</button>
+                <button class="btn btn-op" onclick="append('(')">(</button>
+                <button class="btn btn-op" onclick="append(')')">)</button>
+
+                <!-- Row 3 -->
+                <button class="btn btn-action" onclick="clearDisplay()">AC</button>
+                <button class="btn btn-action" onclick="backspace()" style="background-color: #f59e0b;">DEL</button>
+                <button class="btn btn-op" onclick="append('%')">%</button>
+                <button class="btn btn-op" onclick="append('/')">÷</button>
+
+                <!-- Row 4 -->
+                <button class="btn btn-num" onclick="append('7')">7</button>
+                <button class="btn btn-num" onclick="append('8')">8</button>
+                <button class="btn btn-num" onclick="append('9')">9</button>
+                <button class="btn btn-op" onclick="append('*')">×</button>
+
+                <!-- Row 5 -->
+                <button class="btn btn-num" onclick="append('4')">4</button>
+                <button class="btn btn-num" onclick="append('5')">5</button>
+                <button class="btn btn-num" onclick="append('6')">6</button>
+                <button class="btn btn-op" onclick="append('-')">−</button>
+
+                <!-- Row 6 -->
+                <button class="btn btn-num" onclick="append('1')">1</button>
+                <button class="btn btn-num" onclick="append('2')">2</button>
+                <button class="btn btn-num" onclick="append('3')">3</button>
+                <button class="btn btn-op" onclick="append('+')">+</button>
+
+                <!-- Row 7 -->
+                <button class="btn btn-num" onclick="append('0')">0</button>
+                <button class="btn btn-num" onclick="append('.')">.</button>
+                <button class="btn btn-eval" onclick="evaluateExpression()">=</button>
+            </div>
+        </div>
+
+        <!-- Calculus Web Worker Panel -->
+        <div id="panel-calculus" class="panel">
+            <div class="calculus-form">
+                <div class="text-sm text-slate-400 mb-2 border-l-2 border-blue-500 pl-2">
+                    Numerical approximation executed via isolated Web Worker.
+                </div>
+                
+                <div class="flex gap-4 mb-2">
+                    <label class="flex items-center gap-2 cursor-pointer text-sm">
+                        <input type="radio" name="calc-type" value="integrate" checked onchange="toggleCalcUI()">
+                        Definite Integral
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer text-sm">
+                        <input type="radio" name="calc-type" value="derivative" onchange="toggleCalcUI()">
+                        Derivative
+                    </label>
+                </div>
+
+                <div class="input-group">
+                    <label>Function f(x)</label>
+                    <input type="text" id="calc-func" class="sci-input" placeholder="e.g., sin(x) * x^2" value="sin(x)">
+                </div>
+
+                <!-- Integration Inputs -->
+                <div id="ui-integrate" class="grid grid-cols-2 gap-4">
+                    <div class="input-group">
+                        <label>Lower Bound (a)</label>
+                        <input type="text" id="calc-a" class="sci-input" placeholder="0" value="0">
+                    </div>
+                    <div class="input-group">
+                        <label>Upper Bound (b)</label>
+                        <input type="text" id="calc-b" class="sci-input" placeholder="pi" value="pi">
+                    </div>
+                </div>
+
+                <!-- Derivative Inputs -->
+                <div id="ui-derivative" class="grid grid-cols-1 gap-4 hidden">
+                    <div class="input-group">
+                        <label>Evaluate at x =</label>
+                        <input type="text" id="calc-x" class="sci-input" placeholder="pi/2">
+                    </div>
+                </div>
+
+                <button class="btn btn-calc mt-2 flex justify-center items-center gap-3" onclick="executeCalculus()">
+                    <span>Compute</span>
+                    <div id="calc-loader" class="loader"></div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Session History Panel -->
+        <div id="panel-history" class="panel">
+            <div class="history-list" id="history-container">
+                <div class="text-center text-slate-500 py-4 text-sm">No calculations in current session.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core Logic & Worker Initialization -->
+    <script>
+        // 1. Initialize Math Engine with Precision
+        const m = math.create(math.all, {
+            number: 'BigNumber',
+            precision: 64
+        });
+
+        // 2. State Management
+        let currentExpression = '';
+        let sessionHistory = [];
+        const displayRaw = document.getElementById('raw-display');
+        const displayLatex = document.getElementById('latex-render');
+
+        // 3. UI Interactions
+        function append(char) {
+            if (currentExpression === 'Error') currentExpression = '';
+            currentExpression += char;
+            updateDisplay();
+        }
+
+        function clearDisplay() {
+            currentExpression = '';
+            updateDisplay();
+        }
+
+        function backspace() {
+            currentExpression = currentExpression.slice(0, -1);
+            updateDisplay();
+        }
+
+        // 4. Lexical Parsing & Typesetting
+        function updateDisplay() {
+            displayRaw.textContent = currentExpression || '0';
+            try {
+                // Parse to AST, then to LaTeX representation
+                const node = m.parse(currentExpression || '0');
+                const latex = node.toTex({ parenthesis: 'keep' });
+                katex.render(latex, displayLatex, { throwOnError: false, displayMode: true });
+            } catch (e) {
+                // If parsing fails (e.g. user is halfway typing "sin("), render raw text in KaTeX
+                katex.render(`\\text{${currentExpression || '0'}}`, displayLatex, { throwOnError: false });
+            }
+        }
+
+        // 5. Evaluation & Shunting-Yard Processing (Handled by math.evaluate)
+        function evaluateExpression() {
+            if (!currentExpression) return;
+            try {
+                // Evaluation natively handles BigNumber conversions via config
+                const result = m.evaluate(currentExpression);
+                const formattedResult = m.format(result, { precision: 14 }); // Format to avoid giant string overflow in UI
+                
+                addToHistory(currentExpression, formattedResult);
+                
+                currentExpression = formattedResult.toString();
+                updateDisplay();
+            } catch (error) {
+                displayRaw.textContent = 'Syntax/Domain Error';
+                katex.render(`\\text{Error}`, displayLatex);
+                currentExpression = '';
+            }
+        }
+
+        // 6. Session Memory Management
+        function addToHistory(expr, result) {
+            sessionHistory.unshift({ expr, result });
+            if (sessionHistory.length > 50) sessionHistory.pop();
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const container = document.getElementById('history-container');
+            if (sessionHistory.length === 0) return;
+            
+            container.innerHTML = sessionHistory.map((item, index) => `
+                <div class="history-item" onclick="loadHistory(${index})">
+                    <div class="history-expr">${item.expr}</div>
+                    <div class="history-res">= ${item.result}</div>
+                </div>
+            `).join('');
+        }
+
+        function loadHistory(index) {
+            currentExpression = sessionHistory[index].result.toString();
+            switchTab('standard');
+            updateDisplay();
+        }
+
+        // 7. Tab Management
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(`panel-${tabId}`).classList.add('active');
+        }
+
+        function toggleCalcUI() {
+            const isIntegral = document.querySelector('input[name="calc-type"]:checked').value === 'integrate';
+            document.getElementById('ui-integrate').style.display = isIntegral ? 'grid' : 'none';
+            document.getElementById('ui-derivative').style.display = isIntegral ? 'none' : 'grid';
+        }
+
+        // 8. The Computational Web Worker (Blob approach for single-file isomorphism)
+        const workerCode = `
+            importScripts('https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js');
+            const mathEngine = math.create(math.all, { number: 'BigNumber', precision: 64 });
+
+            self.onmessage = function(e) {
+                const { type, func, a, b, x, n, h } = e.data;
+                try {
+                    // Compile AST once for O(1) loop evaluations
+                    const compiled = mathEngine.compile(func);
+                    const evaluateNode = (val) => compiled.evaluate({ x: val });
+
+                    if (type === 'integrate') {
+                        // Simpson's 1/3 Rule numerical approximation
+                        const start = mathEngine.evaluate(a);
+                        const end = mathEngine.evaluate(b);
+                        const delta = mathEngine.divide(mathEngine.subtract(end, start), n);
+                        
+                        let sum = mathEngine.add(evaluateNode(start), evaluateNode(end));
+                        
+                        for (let i = 1; i < n; i++) {
+                            const currentX = mathEngine.add(start, mathEngine.multiply(delta, i));
+                            const weight = i % 2 === 0 ? 2 : 4;
+                            const evalY = evaluateNode(currentX);
+                            sum = mathEngine.add(sum, mathEngine.multiply(evalY, weight));
+                        }
+                        
+                        const result = mathEngine.multiply(mathEngine.divide(delta, 3), sum);
+                        self.postMessage({ success: true, result: mathEngine.format(result, {precision: 10}) });
+                        
+                    } else if (type === 'derivative') {
+                        // Central Difference Quotient
+                        const targetX = mathEngine.evaluate(x);
+                        const step = mathEngine.bignumber(h);
+                        
+                        const fPlus = evaluateNode(mathEngine.add(targetX, step));
+                        const fMinus = evaluateNode(mathEngine.subtract(targetX, step));
+                        
+                        const numerator = mathEngine.subtract(fPlus, fMinus);
+                        const denominator = mathEngine.multiply(2, step);
+                        
+                        const result = mathEngine.divide(numerator, denominator);
+                        self.postMessage({ success: true, result: mathEngine.format(result, {precision: 10}) });
+                    }
+                } catch (err) {
+                    self.postMessage({ success: false, error: err.message });
+                }
+            };
+        `;
+
+        // Instantiate Worker
+        const blob = new Blob([workerCode], { type: 'application/javascript' });
+        const calcWorker = new Worker(URL.createObjectURL(blob));
+
+        calcWorker.onmessage = function(e) {
+            document.getElementById('calc-loader').style.display = 'none';
+            const { success, result, error } = e.data;
+            
+            if (success) {
+                currentExpression = result.toString();
+                switchTab('standard');
+                updateDisplay();
+                // Add to history programmatically
+                const funcStr = document.getElementById('calc-func').value;
+                const type = document.querySelector('input[name="calc-type"]:checked').value;
+                const operationContext = type === 'integrate' 
+                    ? `∫(${funcStr}) dx` 
+                    : `d/dx(${funcStr})`;
+                addToHistory(operationContext, result);
+            } else {
+                alert("Computational Error: " + error + "\nEnsure function is valid for parameter 'x'.");
+            }
+        };
+
+        function executeCalculus() {
+            const type = document.querySelector('input[name="calc-type"]:checked').value;
+            const func = document.getElementById('calc-func').value;
+            
+            document.getElementById('calc-loader').style.display = 'block';
+
+            if (type === 'integrate') {
+                const a = document.getElementById('calc-a').value || '0';
+                const b = document.getElementById('calc-b').value || '0';
+                calcWorker.postMessage({ type, func, a, b, n: 10000 }); // N=10,000 strips for high precision
+            } else {
+                const x = document.getElementById('calc-x').value || '0';
+                calcWorker.postMessage({ type, func, x, h: 1e-7 }); // Epsilon for derivative
+            }
+        }
+
+        // Initial setup
+        updateDisplay();
+    </script>
+</body>
+</html>
