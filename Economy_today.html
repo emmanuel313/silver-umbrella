@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Market & Regional Dashboard</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --bg: #0b0e14;
+            --surface: #151a23;
+            --surface-hover: #1e2532;
+            --border: #2e3646;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --gold: #FFD700;
+            --silver: #E2E8F0;
+            --petrol: #FF9800;
+            --diesel: #00BCD4;
+            --forex: #3b82f6;
+            --up: #10b981;
+            --down: #ef4444;
+            --font-main: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Ticker Tape */
+        .ticker-wrap {
+            width: 100%;
+            background-color: var(--surface);
+            border-bottom: 1px solid var(--border);
+            height: 40px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .ticker {
+            display: inline-flex;
+            white-space: nowrap;
+            padding-left: 100%;
+            animation: tickerScroll 25s linear infinite;
+        }
+        .ticker:hover { animation-play-state: paused; }
+        .ticker-item {
+            margin-right: 3rem;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        @keyframes tickerScroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        /* Header & Summary */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .title h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        .title p { color: var(--text-muted); font-size: 0.9rem; margin-top: 0.2rem; }
+        .last-updated {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            background: var(--surface);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+
+        /* Summary Bar */
+        .summary-bar {
+            display: flex;
+            gap: 1.5rem;
+            background: var(--surface);
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            font-size: 0.85rem;
+            font-family: var(--font-mono);
+        }
+        .summary-item { display: flex; gap: 0.8rem; align-items: center; }
+        .summary-item strong { color: var(--text-main); font-family: var(--font-main); }
+        .val-h { color: var(--up); }
+        .val-l { color: var(--down); }
+
+        /* Section Headers */
+        .section-header {
+            margin: 2rem 0 1rem 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Grid Layouts */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Shared Card Styles */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            border-color: #475569;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        /* Badges & Icons */
+        .card-icon.gold { color: var(--gold); }
+        .card-icon.silver { color: var(--silver); }
+        .card-icon.petrol { color: var(--petrol); }
+        .card-icon.diesel { color: var(--diesel); }
+        .card-icon.forex { color: var(--forex); }
+
+        .price-wrap { display: flex; align-items: baseline; gap: 1rem; margin-bottom: 0.5rem; }
+        .price {
+            font-family: var(--font-mono);
+            font-size: 2.2rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+        .change-badge {
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            padding: 0.3rem 0.6rem;
+            border-radius: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        .change-badge.up { background: rgba(16, 185, 129, 0.15); color: var(--up); }
+        .change-badge.down { background: rgba(239, 68, 68, 0.15); color: var(--down); }
+        
+        /* Layout specific */
+        .sparkline-container { height: 60px; width: 100%; margin-top: 1rem; }
+        
+        /* Forex Section */
+        .forex-container {
+            display: flex;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 3rem;
+        }
+        .forex-info {
+            padding: 2rem;
+            flex: 0 0 350px;
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .forex-chart-wrapper {
+            flex: 1;
+            padding: 1.5rem;
+            position: relative;
+            min-height: 250px;
+        }
+        .forex-label { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+
+        /* Weather/AQI Section */
+        .weather-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+        .env-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .env-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .env-country { font-weight: 700; font-size: 1.1rem; }
+        .env-city { color: var(--text-muted); font-size: 0.85rem; }
+        .env-flag { font-size: 1.5rem; }
+        
+        .aqi-block {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: rgba(0,0,0,0.2);
+            padding: 1rem;
+            border-radius: 12px;
+        }
+        .aqi-val {
+            font-size: 2rem;
+            font-weight: 700;
+            font-family: var(--font-mono);
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            color: #fff;
+        }
+        .aqi-text h4 { font-size: 0.9rem; margin-bottom: 0.2rem; color: var(--text-muted); }
+        .aqi-text span { font-weight: 600; font-size: 1.1rem; }
+        
+        .env-metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.8rem;
+            font-size: 0.9rem;
+        }
+        .metric-item { display: flex; justify-content: space-between; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+        .metric-item span:first-child { color: var(--text-muted); }
+        .metric-item span:last-child { font-weight: 600; font-family: var(--font-mono); }
+
+        /* Chart Section */
+        .chart-section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 3rem;
+        }
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .chart-controls {
+            display: flex;
+            gap: 0.5rem;
+            background: #0b0e14;
+            padding: 0.3rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        .chart-controls button {
+            background: transparent;
+            color: var(--text-muted);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        .chart-controls button.active { background: var(--surface-hover); color: var(--text-main); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .main-chart-wrapper { position: relative; height: 400px; width: 100%; }
+
+        /* Flash Animations */
+        @keyframes flashGreen { 0% { background-color: rgba(16, 185, 129, 0.2); } 100% { background-color: var(--surface); } }
+        @keyframes flashRed { 0% { background-color: rgba(239, 68, 68, 0.2); } 100% { background-color: var(--surface); } }
+        .flash-up { animation: flashGreen 1s ease-out; }
+        .flash-down { animation: flashRed 1s ease-out; }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .forex-container { flex-direction: column; }
+            .forex-info { border-right: none; border-bottom: 1px solid var(--border); padding: 1.5rem; flex: auto; }
+            .forex-chart-wrapper { height: 300px; }
+        }
+        @media (max-width: 768px) {
+            .price { font-size: 1.8rem; }
+            .main-chart-wrapper { height: 300px; }
+            header { flex-direction: column; align-items: flex-start; }
+            .summary-bar { flex-direction: column; gap: 0.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Animated Ticker -->
+    <div class="ticker-wrap">
+        <div class="ticker" id="ticker-content"></div>
+    </div>
+
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="title">
+                <h1>Markets & Regional Dashboard</h1>
+                <p>Live Commodities, Currencies, and Environmental Data</p>
+            </div>
+            <div class="last-updated" id="last-updated">
+                <i class="fa-regular fa-clock"></i> Last Updated: <span>--:--:--</span>
+            </div>
+        </header>
+
+        <!-- Summary Bar -->
+        <div class="summary-bar" id="summary-bar"></div>
+
+        <!-- Section: Metals -->
+        <div class="section-header"><i class="fa-solid fa-layer-group"></i> Precious Metals ($/oz)</div>
+        <div class="cards-grid">
+            <div class="card" id="card-gold">
+                <div class="card-header">
+                    <div class="card-title"><i class="fa-solid fa-coins card-icon gold"></i> Gold</div>
+                    <div class="change-badge" id="badge-gold">--</div>
+                </div>
+                <div class="price-wrap"><div class="price" id="price-gold">--</div></div>
+                <div class="sparkline-container"><canvas id="spark-gold"></canvas></div>
+            </div>
+            <div class="card" id="card-silver">
+                <div class="card-header">
+                    <div class="card-title"><i class="fa-solid fa-ring card-icon silver"></i> Silver</div>
+                    <div class="change-badge" id="badge-silver">--</div>
+                </div>
+                <div class="price-wrap"><div class="price" id="price-silver">--</div></div>
+                <div class="sparkline-container"><canvas id="spark-silver"></canvas></div>
+            </div>
+        </div>
+
+        <!-- Section: Fuel -->
+        <div class="section-header"><i class="fa-solid fa-gas-pump"></i> Energy / Fuel (₹/L)</div>
+        <div class="cards-grid">
+            <div class="card" id="card-petrol">
+                <div class="card-header">
+                    <div class="card-title"><i class="fa-solid fa-gas-pump card-icon petrol"></i> Petrol</div>
+                    <div class="change-badge" id="badge-petrol">--</div>
+                </div>
+                <div class="price-wrap"><div class="price" id="price-petrol">--</div></div>
+                <div class="sparkline-container"><canvas id="spark-petrol"></canvas></div>
+            </div>
+            <div class="card" id="card-diesel">
+                <div class="card-header">
+                    <div class="card-title"><i class="fa-solid fa-oil-can card-icon diesel"></i> Diesel</div>
+                    <div class="change-badge" id="badge-diesel">--</div>
+                </div>
+                <div class="price-wrap"><div class="price" id="price-diesel">--</div></div>
+                <div class="sparkline-container"><canvas id="spark-diesel"></canvas></div>
+            </div>
+        </div>
+
+        <!-- NEW Section: Forex -->
+        <div class="section-header"><i class="fa-solid fa-money-bill-transfer"></i> Foreign Exchange</div>
+        <div class="forex-container" id="card-forex">
+            <div class="forex-info">
+                <div class="card-title" style="margin-bottom: 1.5rem;"><i class="fa-solid fa-dollar-sign card-icon forex"></i> USD / INR</div>
+                <div class="forex-label">Current Exchange Rate</div>
+                <div class="price-wrap" style="margin-bottom: 1rem;">
+                    <div class="price" id="price-forex">₹--.--</div>
+                </div>
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <div class="change-badge" id="badge-forex">--</div>
+                    <span id="forex-status-text" style="font-size: 0.85rem; color: var(--text-muted);">Fetching live rate...</span>
+                </div>
+            </div>
+            <div class="forex-chart-wrapper">
+                <canvas id="chart-forex"></canvas>
+            </div>
+        </div>
+
+        <!-- Section: Main Chart -->
+        <div class="section-header"><i class="fa-solid fa-chart-line"></i> Metals Historical Trend</div>
+        <div class="chart-section">
+            <div class="chart-header">
+                <h3>Gold vs Silver Performance</h3>
+                <div class="chart-controls">
+                    <button class="active" onclick="setTimeframe('24H')" id="btn-24H">24H</button>
+                    <button onclick="setTimeframe('7D')" id="btn-7D">7D</button>
+                    <button onclick="setTimeframe('1M')" id="btn-1M">1M</button>
+                </div>
+            </div>
+            <div class="main-chart-wrapper"><canvas id="mainChart"></canvas></div>
+        </div>
+
+        <!-- NEW Section: Environment -->
+        <div class="section-header"><i class="fa-solid fa-leaf"></i> Regional Environment & Air Quality</div>
+        <div class="weather-grid" id="weather-grid">
+            <!-- Populated via JS -->
+            <div style="color: var(--text-muted); padding: 1rem;">Loading Regional Environment Data...</div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. CONFIG & STATE ---
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.font.family = "'Inter', sans-serif";
+
+        const state = {
+            assets: {
+                gold: { name: 'Gold', symbol: '$', price: 2345.50, open: 2330.00, high: 2345.50, low: 2320.10, color: '#FFD700', history:[] },
+                silver: { name: 'Silver', symbol: '$', price: 28.65, open: 29.10, high: 29.20, low: 28.40, color: '#E2E8F0', history:[] },
+                petrol: { name: 'Petrol', symbol: '₹', price: 96.72, open: 96.50, high: 96.80, low: 96.50, color: '#FF9800', history:[] },
+                diesel: { name: 'Diesel', symbol: '₹', price: 89.62, open: 89.62, high: 89.70, low: 89.50, color: '#00BCD4', history:[] }
+            },
+            forex: {
+                price: 83.50, open: 83.35, history:[]
+            },
+            timeframe: '24H',
+            charts: { main: null, sparklines: {}, forex: null }
+        };
+
+        const cities =[
+            { id: 'in', name: 'India', city: 'New Delhi', lat: 28.61, lon: 77.21, flag: '🇮🇳' },
+            { id: 'pk', name: 'Pakistan', city: 'Islamabad', lat: 33.68, lon: 73.05, flag: '🇵🇰' },
+            { id: 'cn', name: 'China', city: 'Beijing', lat: 39.90, lon: 116.41, flag: '🇨🇳' },
+            { id: 'bd', name: 'Bangladesh', city: 'Dhaka', lat: 23.81, lon: 90.41, flag: '🇧🇩' },
+            { id: 'np', name: 'Nepal', city: 'Kathmandu', lat: 27.72, lon: 85.32, flag: '🇳🇵' },
+            { id: 'lk', name: 'Sri Lanka', city: 'Colombo', lat: 6.93, lon: 79.86, flag: '🇱🇰' }
+        ];
+
+        // --- 2. UTILS ---
+        const formatMoney = (val, symbol) => symbol + val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const generateHistory = (basePrice, volatility, points) => {
+            let data =[]; let current = basePrice;
+            for(let i=0; i<points; i++) { current += (Math.random() - 0.5) * volatility; data.push(Number(current.toFixed(2))); }
+            return data;
+        };
+
+        // --- 3. INIT SIMULATED METALS DATA ---
+        const initData = () => {
+            const periods = { '24H': 24, '7D': 7, '1M': 30 };
+            ['gold', 'silver', 'petrol', 'diesel'].forEach(key => {
+                const asset = state.assets[key];
+                const vol = key === 'gold' ? 15 : key === 'silver' ? 0.8 : 0.2;
+                asset.historyData = {
+                    '24H': generateHistory(asset.open, vol, periods['24H']),
+                    '7D': generateHistory(asset.open, vol * 2.5, periods['7D']),
+                    '1M': generateHistory(asset.open, vol * 5, periods['1M'])
+                };
+                asset.historyData['24H'][23] = asset.price;
+                asset.history = asset.historyData['24H'];
+            });
+        };
+
+        // --- 4. NEW: FETCH FOREX DATA ---
+        const fetchForexData = async () => {
+            try {
+                // Fetch real live USD/INR data
+                const res = await fetch('https://open.er-api.com/v6/latest/USD');
+                const data = await res.json();
+                if(data && data.rates && data.rates.INR) {
+                    state.forex.price = data.rates.INR;
+                    // Mock a slightly different open price for demonstration of change %
+                    state.forex.open = state.forex.price - ((Math.random() - 0.4) * 0.3);
+                }
+            } catch (err) {
+                console.warn('Forex API failed, using fallback data.');
+            }
+            // Generate 30-day realistic historical path leading to current price
+            let path =[];
+            let p = state.forex.price;
+            for(let i=0; i<30; i++) {
+                path.unshift(Number(p.toFixed(3)));
+                p -= (Math.random() - 0.5) * 0.25; 
+            }
+            state.forex.history = path;
+            updateForexDOM();
+            initForexChart();
+        };
+
+        const updateForexDOM = () => {
+            const elPrice = document.getElementById('price-forex');
+            const elBadge = document.getElementById('badge-forex');
+            const elStatus = document.getElementById('forex-status-text');
+            const cardEl = document.getElementById('card-forex');
+
+            const diff = state.forex.price - state.forex.open;
+            const pct = (diff / state.forex.open) * 100;
+            const isUp = diff >= 0;
+
+            elPrice.innerText = `₹${state.forex.price.toFixed(3)}`;
+            elBadge.className = `change-badge ${isUp ? 'up' : 'down'}`;
+            elBadge.innerHTML = `<i class="fa-solid fa-arrow-${isUp ? 'up' : 'down'}"></i> ${isUp?'+':''}${pct.toFixed(2)}%`;
+            
+            // Context logic: If USD/INR goes UP, USD appreciates, INR depreciates.
+            elStatus.innerText = isUp ? 'INR Depreciating vs USD' : 'INR Appreciating vs USD';
+        };
+
+        // --- 5. NEW: FETCH ENVIRONMENT DATA ---
+        const getAqiStyle = (aqi) => {
+            if(aqi <= 50) return { label: 'Good', color: '#10b981' };
+            if(aqi <= 100) return { label: 'Moderate', color: '#f59e0b' };
+            if(aqi <= 150) return { label: 'Unhealthy (Sens)', color: '#f97316' };
+            if(aqi <= 200) return { label: 'Unhealthy', color: '#ef4444' };
+            if(aqi <= 300) return { label: 'Very Unhealthy', color: '#8b5cf6' };
+            return { label: 'Hazardous', color: '#881337' };
+        };
+
+        const fetchEnvironmentData = async () => {
+            const lats = cities.map(c => c.lat).join(',');
+            const lons = cities.map(c => c.lon).join(',');
+            
+            try {
+                // Fetch Weather & AQI from Open-Meteo simultaneously (No API key needed!)
+                const [weatherRes, aqiRes] = await Promise.all([
+                    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lons}&current=temperature_2m,relative_humidity_2m,visibility&daily=uv_index_max&timezone=auto`),
+                    fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lats}&longitude=${lons}&current=us_aqi&timezone=auto`)
+                ]);
+
+                let weatherData = await weatherRes.json();
+                let aqiData = await aqiRes.json();
+                
+                // Open-Meteo returns array of objects for multiple coordinates
+                if(!Array.isArray(weatherData)) weatherData = [weatherData];
+                if(!Array.isArray(aqiData)) aqiData = [aqiData];
+
+                renderEnvironmentCards(weatherData, aqiData);
+
+            } catch (err) {
+                console.error("Environment API error", err);
+                document.getElementById('weather-grid').innerHTML = 
+                    `<div style="color: var(--down); padding: 1rem;"><i class="fa-solid fa-triangle-exclamation"></i> Failed to load environmental data. Please try again later.</div>`;
+            }
+        };
+
+        const renderEnvironmentCards = (weatherData, aqiData) => {
+            const grid = document.getElementById('weather-grid');
+            grid.innerHTML = '';
+
+            cities.forEach((city, index) => {
+                const w = weatherData[index]?.current || {};
+                const dailyW = weatherData[index]?.daily || {};
+                const a = aqiData[index]?.current || {};
+
+                const aqiVal = a.us_aqi || '--';
+                const style = getAqiStyle(aqiVal === '--' ? 0 : aqiVal);
+                const temp = w.temperature_2m !== undefined ? `${w.temperature_2m}°C` : '--';
+                const hum = w.relative_humidity_2m !== undefined ? `${w.relative_humidity_2m}%` : '--';
+                const vis = w.visibility !== undefined ? `${(w.visibility/1000).toFixed(1)} km` : '--';
+                const uv = dailyW.uv_index_max && dailyW.uv_index_max[0] !== undefined ? dailyW.uv_index_max[0] : '--';
+
+                const html = `
+                    <div class="env-card">
+                        <div class="env-header">
+                            <div>
+                                <div class="env-country">${city.name}</div>
+                                <div class="env-city">${city.city}</div>
+                            </div>
+                            <div class="env-flag">${city.flag}</div>
+                        </div>
+                        
+                        <div class="aqi-block">
+                            <div class="aqi-val" style="background-color: ${style.color}">${aqiVal}</div>
+                            <div class="aqi-text">
+                                <h4>Air Quality Index</h4>
+                                <span style="color: ${style.color}">${style.label}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="env-metrics">
+                            <div class="metric-item"><span>Temp</span> <span>${temp}</span></div>
+                            <div class="metric-item"><span>Humidity</span> <span>${hum}</span></div>
+                            <div class="metric-item"><span>Visibility</span> <span>${vis}</span></div>
+                            <div class="metric-item"><span>UV Index</span> <span>${uv}</span></div>
+                        </div>
+                    </div>
+                `;
+                grid.innerHTML += html;
+            });
+        };
+
+        // --- 6. CHARTS ---
+        const getLabels = (timeframe) => {
+            const labels =[];
+            if(timeframe === '24H') { for(let i=23; i>=0; i--) { const d=new Date(); d.setHours(d.getHours()-i); labels.push(d.getHours()+':00'); } }
+            else if (timeframe === '7D') { for(let i=6; i>=0; i--) { const d=new Date(); d.setDate(d.getDate()-i); labels.push(d.toLocaleDateString('en-US',{weekday:'short'})); } }
+            else if (timeframe === '1M') { for(let i=29; i>=0; i--) { const d=new Date(); d.setDate(d.getDate()-i); if(i%5===0||i===0) labels.push(d.getDate()+'/'+(d.getMonth()+1)); else labels.push(''); } }
+            return labels;
+        };
+
+        const initCharts = () => {
+            const ctxMain = document.getElementById('mainChart').getContext('2d');
+            state.charts.main = new Chart(ctxMain, {
+                type: 'line',
+                data: {
+                    labels: getLabels('24H'),
+                    datasets:[
+                        { label: 'Gold ($)', data: state.assets.gold.history, borderColor: state.assets.gold.color, backgroundColor: 'rgba(255, 215, 0, 0.1)', borderWidth: 2, tension: 0.4, pointRadius: 0, fill: true, yAxisID: 'y' },
+                        { label: 'Silver ($)', data: state.assets.silver.history, borderColor: state.assets.silver.color, backgroundColor: 'transparent', borderWidth: 2, tension: 0.4, pointRadius: 0, yAxisID: 'y1' }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+                    plugins: { tooltip: { backgroundColor: '#1e2532', titleColor: '#f8fafc', bodyColor: '#e2e8f0', borderColor: '#2e3646', borderWidth: 1 } },
+                    scales: {
+                        x: { grid: { color: '#2e3646', drawBorder: false } },
+                        y: { type: 'linear', position: 'left', grid: { color: '#2e3646' } },
+                        y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false } }
+                    }
+                }
+            });['gold', 'silver', 'petrol', 'diesel'].forEach(key => {
+                const ctx = document.getElementById(`spark-${key}`).getContext('2d');
+                state.charts.sparklines[key] = new Chart(ctx, {
+                    type: 'line',
+                    data: { labels: Array(24).fill(''), datasets: [{ data: state.assets[key].history, borderColor: state.assets[key].color, borderWidth: 2, tension: 0.3, pointRadius: 0 }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } }, scales: { x: { display: false }, y: { display: false } }, layout: { padding: 0 } }
+                });
+            });
+        };
+
+        const initForexChart = () => {
+            const ctxForex = document.getElementById('chart-forex').getContext('2d');
+            // Gen 30 days labels
+            const labels =[];
+            for(let i=29; i>=0; i--) { const d=new Date(); d.setDate(d.getDate()-i); labels.push(d.getDate()+'/'+(d.getMonth()+1)); }
+
+            const isUp = (state.forex.price - state.forex.history[0]) >= 0;
+            const lineColor = isUp ? '#ef4444' : '#10b981'; // For INR vs USD context (graph goes up = INR weakening = Red)
+            const bgColor = isUp ? 'rgba(239, 68, 68, 0.15)' : 'rgba(16, 185, 129, 0.15)';
+
+            state.charts.forex = new Chart(ctxForex, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets:[{
+                        label: 'USD/INR (30 Days)',
+                        data: state.forex.history,
+                        borderColor: lineColor,
+                        backgroundColor: bgColor,
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 0,
+                        pointHoverRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1e2532' } },
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { grid: { color: '#2e3646' }, ticks: { callback: v => '₹'+v.toFixed(1) } }
+                    }
+                }
+            });
+        };
+
+        // --- 7. ANIMATION & DOM UPDATES ---
+        const animateValue = (obj, start, end, duration, symbol) => {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                const currentVal = (progress * (end - start) + start);
+                obj.innerHTML = formatMoney(currentVal, symbol);
+                if (progress < 1) window.requestAnimationFrame(step);
+                else obj.innerHTML = formatMoney(end, symbol);
+            };
+            window.requestAnimationFrame(step);
+        };
+
+        const updateDOM = () => {
+            let tickerHTML = '';
+            let summaryHTML = '';['gold', 'silver', 'petrol', 'diesel'].forEach(key => {
+                const asset = state.assets[key];
+                const change = asset.price - asset.open;
+                const percent = (change / asset.open) * 100;
+                const isUp = change >= 0;
+                
+                const priceEl = document.getElementById(`price-${key}`);
+                const badgeEl = document.getElementById(`badge-${key}`);
+                const cardEl = document.getElementById(`card-${key}`);
+
+                const oldText = priceEl.innerText.replace(/[^0-9.-]+/g,"");
+                const oldPrice = parseFloat(oldText) || asset.price;
+                
+                if (oldPrice !== asset.price && oldText !== '--') {
+                    cardEl.classList.remove('flash-up', 'flash-down');
+                    void cardEl.offsetWidth; 
+                    cardEl.classList.add(isUp ? 'flash-up' : 'flash-down');
+                    animateValue(priceEl, oldPrice, asset.price, 800, asset.symbol);
+                } else if (oldText === '--') {
+                    priceEl.innerHTML = formatMoney(asset.price, asset.symbol);
+                }
+
+                badgeEl.className = `change-badge ${isUp ? 'up' : 'down'}`;
+                badgeEl.innerHTML = `<i class="fa-solid fa-arrow-${isUp?'up':'down'}"></i> ${isUp?'+':''}${percent.toFixed(2)}%`;
+
+                if(state.timeframe === '24H' && state.charts.sparklines[key]) {
+                    const len = asset.historyData['24H'].length;
+                    asset.historyData['24H'][len-1] = asset.price;
+                    state.charts.sparklines[key].update('none');
+                    if (key === 'gold' || key === 'silver') state.charts.main.update('none');
+                }
+
+                tickerHTML += `<div class="ticker-item"><span style="color:${asset.color}">${asset.name.toUpperCase()}</span> <span>${formatMoney(asset.price, asset.symbol)}</span><span style="color: ${isUp ? 'var(--up)' : 'var(--down)'}">(${isUp?'+':''}${percent.toFixed(2)}%)</span></div>`;
+                summaryHTML += `<div class="summary-item"><strong>${asset.name}:</strong> <span class="val-h">H: ${formatMoney(asset.high, asset.symbol)}</span> <span class="val-l">L: ${formatMoney(asset.low, asset.symbol)}</span> <span>C: ${formatMoney(asset.price, asset.symbol)}</span></div>`;
+            });
+
+            // Add Forex to ticker
+            const fxDiff = state.forex.price - state.forex.open;
+            tickerHTML += `<div class="ticker-item"><span style="color:var(--forex)">USD/INR</span> <span>₹${state.forex.price.toFixed(3)}</span><span style="color: ${fxDiff>=0 ? 'var(--down)' : 'var(--up)'}">(${(fxDiff/state.forex.open*100).toFixed(2)}%)</span></div>`;
+
+            document.getElementById('ticker-content').innerHTML = tickerHTML.repeat(4);
+            document.getElementById('summary-bar').innerHTML = summaryHTML;
+            document.getElementById('last-updated').querySelector('span').innerText = new Date().toLocaleTimeString();
+        };
+
+        const simulateLiveTick = () => {['gold', 'silver', 'petrol', 'diesel'].forEach(key => {
+                const asset = state.assets[key];
+                const vol = key === 'gold' ? 2.5 : key === 'silver' ? 0.15 : 0.05;
+                let newPrice = asset.price + (Math.random() - 0.5) * vol;
+                if (newPrice > asset.high) asset.high = newPrice;
+                if (newPrice < asset.low) asset.low = newPrice;
+                asset.price = Number(newPrice.toFixed(2));
+            });
+            updateDOM();
+        };
+
+        window.setTimeframe = (tf) => {
+            state.timeframe = tf;
+            ['24H', '7D', '1M'].forEach(id => document.getElementById(`btn-${id}`).classList.remove('active'));
+            document.getElementById(`btn-${tf}`).classList.add('active');
+            state.charts.main.data.labels = getLabels(tf);
+            state.charts.main.data.datasets[0].data = state.assets.gold.historyData[tf];
+            state.charts.main.data.datasets[1].data = state.assets.silver.historyData[tf];
+            state.charts.main.update();
+        };
+
+        // --- 8. INITIALIZE ---
+        window.onload = () => {
+            initData();
+            initCharts();
+            updateDOM();
+            fetchForexData();
+            fetchEnvironmentData();
+            setInterval(simulateLiveTick, 8000); 
+        };
+    </script>
+</body>
+</html>
