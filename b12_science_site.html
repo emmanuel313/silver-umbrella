@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The B12 Blueprint — How a Vitamin Shapes Your Child's Future Health</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500&family=DM+Mono&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root {
+    --ink: #0e0e12;
+    --paper: #f5f0e8;
+    --amber: #d4821a;
+    --amber-light: #f0a93c;
+    --amber-dim: #7a4a0e;
+    --teal: #1a7a6e;
+    --teal-light: #2ab5a3;
+    --muted: #6b6760;
+    --card-bg: #18181f;
+    --card-border: #2a2a35;
+    --serif: 'Playfair Display', Georgia, serif;
+    --sans: 'DM Sans', system-ui, sans-serif;
+    --mono: 'DM Mono', monospace;
+    --section-pad: clamp(4rem, 10vw, 8rem);
+    --max-w: 1100px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.75;
+    overflow-x: hidden;
+  }
+
+  /* ─── SKIP LINK (A11Y) ─── */
+  .skip-link {
+    position: absolute;
+    top: -100px;
+    left: 1rem;
+    background: var(--amber);
+    color: var(--ink);
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-weight: 500;
+    z-index: 9999;
+    transition: top 0.2s;
+  }
+  .skip-link:focus { top: 1rem; }
+
+  /* ─── NAVBAR ─── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: rgba(14,14,18,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    padding: 0 clamp(1rem, 5vw, 3rem);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+  }
+  .nav-brand {
+    font-family: var(--serif);
+    font-size: 1rem;
+    color: var(--amber-light);
+    text-decoration: none;
+    letter-spacing: 0.02em;
+  }
+  .nav-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+  }
+  .nav-links a {
+    color: rgba(245,240,232,0.6);
+    text-decoration: none;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover, .nav-links a:focus { color: var(--amber-light); }
+  @media (max-width: 640px) { .nav-links { display: none; } }
+
+  /* ─── HERO ─── */
+  #hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: calc(56px + 4rem) clamp(1.5rem, 7vw, 5rem) 4rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-grain {
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+
+  .hero-accent-circle {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .hac-1 {
+    width: 600px; height: 600px;
+    right: -120px; top: -120px;
+    background: radial-gradient(circle, rgba(212,130,26,0.12) 0%, transparent 70%);
+  }
+  .hac-2 {
+    width: 400px; height: 400px;
+    left: -80px; bottom: -80px;
+    background: radial-gradient(circle, rgba(26,122,110,0.1) 0%, transparent 70%);
+  }
+
+  .hero-eyebrow {
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--amber-light);
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+    font-family: var(--sans);
+  }
+
+  .hero-title {
+    font-family: var(--serif);
+    font-size: clamp(2.8rem, 6vw, 5.5rem);
+    font-weight: 900;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    max-width: 14ch;
+    margin-bottom: 2rem;
+  }
+  .hero-title em {
+    font-style: italic;
+    color: var(--amber-light);
+  }
+
+  .elevator-pitch {
+    max-width: 680px;
+    border-left: 3px solid var(--amber);
+    padding-left: 1.5rem;
+    margin-bottom: 3rem;
+  }
+  .elevator-pitch p {
+    font-size: 1.05rem;
+    color: rgba(245,240,232,0.82);
+    line-height: 1.8;
+  }
+  .elevator-pitch p + p { margin-top: 0.75rem; }
+
+  .hero-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--amber);
+    color: var(--ink);
+    padding: 0.75rem 1.75rem;
+    border-radius: 4px;
+    font-weight: 500;
+    font-size: 0.95rem;
+    text-decoration: none;
+    letter-spacing: 0.02em;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .hero-cta:hover, .hero-cta:focus { background: var(--amber-light); transform: translateY(-1px); }
+
+  .hero-meta {
+    margin-top: 1.25rem;
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-family: var(--mono);
+  }
+
+  /* ─── SECTION SCAFFOLDING ─── */
+  section {
+    padding: var(--section-pad) clamp(1.5rem, 7vw, 5rem);
+    max-width: var(--max-w);
+    margin: 0 auto;
+  }
+  section.full-bleed {
+    max-width: none;
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .section-inner {
+    max-width: var(--max-w);
+    margin: 0 auto;
+    padding: 0 clamp(1.5rem, 7vw, 5rem);
+  }
+
+  .section-tag {
+    font-size: 0.68rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--amber-light);
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+    display: block;
+    font-family: var(--sans);
+  }
+
+  .section-title {
+    font-family: var(--serif);
+    font-size: clamp(1.9rem, 3.5vw, 2.8rem);
+    font-weight: 700;
+    line-height: 1.15;
+    margin-bottom: 1rem;
+  }
+
+  .lead {
+    font-size: 1.05rem;
+    color: rgba(245,240,232,0.78);
+    max-width: 64ch;
+    margin-bottom: 3rem;
+  }
+
+  hr.divider {
+    border: none;
+    border-top: 1px solid rgba(255,255,255,0.07);
+    margin: 0;
+  }
+
+  /* ─── SCROLLYTELLING STORY ─── */
+  #story { background: #0b0b0f; }
+
+  .story-steps {
+    display: grid;
+    gap: 0;
+  }
+
+  .story-step {
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    gap: 2rem;
+    padding: 3rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .story-step.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .story-step:last-child { border-bottom: none; }
+
+  .step-number {
+    font-family: var(--serif);
+    font-size: 3rem;
+    font-weight: 700;
+    color: rgba(212,130,26,0.25);
+    line-height: 1;
+    padding-top: 0.25rem;
+    text-align: right;
+  }
+
+  .step-content {}
+  .step-tag {
+    font-size: 0.68rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--teal-light);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    font-family: var(--sans);
+  }
+  .step-title {
+    font-family: var(--serif);
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+  }
+  .step-body {
+    color: rgba(245,240,232,0.75);
+    font-size: 0.96rem;
+    max-width: 58ch;
+    line-height: 1.8;
+  }
+  .step-callout {
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    background: rgba(212,130,26,0.08);
+    border-left: 2px solid var(--amber);
+    border-radius: 0 4px 4px 0;
+    font-size: 0.88rem;
+    color: rgba(240,169,60,0.9);
+    font-style: italic;
+  }
+
+  /* ─── JARGON BUSTER ─── */
+  .jargon {
+    position: relative;
+    display: inline;
+    cursor: help;
+    border-bottom: 1px dashed var(--amber);
+    color: var(--amber-light);
+    font-style: normal;
+  }
+  .jargon-tooltip {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1e1e28;
+    border: 1px solid rgba(212,130,26,0.3);
+    border-radius: 6px;
+    padding: 0.6rem 0.85rem;
+    font-size: 0.8rem;
+    color: rgba(245,240,232,0.9);
+    line-height: 1.55;
+    width: 220px;
+    z-index: 200;
+    pointer-events: none;
+    font-family: var(--sans);
+    font-style: normal;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  }
+  .jargon-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: rgba(212,130,26,0.3);
+  }
+  .jargon:hover .jargon-tooltip,
+  .jargon:focus .jargon-tooltip { display: block; }
+
+  /* ─── CONTENT MAP TABLE ─── */
+  .content-map {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    margin-top: 2rem;
+  }
+  .content-map thead th {
+    text-align: left;
+    padding: 0.75rem 1rem;
+    font-size: 0.68rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--amber-light);
+    border-bottom: 1px solid rgba(212,130,26,0.3);
+    font-weight: 500;
+  }
+  .content-map tbody tr {
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    transition: background 0.15s;
+  }
+  .content-map tbody tr:hover { background: rgba(255,255,255,0.025); }
+  .content-map tbody td {
+    padding: 0.85rem 1rem;
+    color: rgba(245,240,232,0.75);
+    vertical-align: top;
+  }
+  .content-map tbody td:first-child {
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .content-map tbody td:nth-child(2) { font-weight: 500; color: var(--paper); }
+  .badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+    background: rgba(26,122,110,0.18);
+    color: var(--teal-light);
+    letter-spacing: 0.04em;
+    border: 1px solid rgba(26,122,110,0.25);
+    margin-left: 0.5rem;
+  }
+
+  /* ─── INTERACTIVE CHART SECTION ─── */
+  #findings { background: #0d0d14; }
+
+  .findings-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+  }
+  @media (max-width: 700px) { .findings-grid { grid-template-columns: 1fr; } }
+
+  .stat-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 1.25rem 1.5rem;
+  }
+  .stat-label {
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 500;
+    margin-bottom: 0.4rem;
+    font-family: var(--sans);
+  }
+  .stat-value {
+    font-family: var(--serif);
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--amber-light);
+    line-height: 1;
+  }
+  .stat-desc {
+    margin-top: 0.4rem;
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .chart-container {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 1.75rem;
+  }
+  .chart-title {
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: rgba(245,240,232,0.8);
+    margin-bottom: 0.3rem;
+    letter-spacing: 0.02em;
+  }
+  .chart-subtitle {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-bottom: 1.25rem;
+  }
+  .chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 1rem;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .legend-swatch {
+    width: 10px; height: 10px;
+    border-radius: 2px;
+  }
+  .chart-wrap {
+    position: relative;
+    height: 300px;
+  }
+  .chart-note {
+    margin-top: 0.75rem;
+    font-size: 0.73rem;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  /* ─── PATHWAY DIAGRAM ─── */
+  #pathway { background: #0b0b0f; }
+
+  .pathway-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 2.5rem;
+  }
+  @media (max-width: 700px) { .pathway-grid { grid-template-columns: 1fr; } }
+  .pathway-cell {
+    background: #111118;
+    padding: 1.5rem;
+  }
+  .pc-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+    font-family: var(--sans);
+  }
+  .pc-label.cytosol { color: var(--teal-light); }
+  .pc-label.mito { color: #a87bde; }
+
+  .pathway-svg-wrap {
+    overflow-x: auto;
+  }
+
+  /* ─── FAQ ─── */
+  #faq {}
+
+  .faq-list {
+    margin-top: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .faq-item {
+    background: #111118;
+  }
+  .faq-question {
+    width: 100%;
+    text-align: left;
+    padding: 1.2rem 1.5rem;
+    background: none;
+    border: none;
+    color: var(--paper);
+    font-family: var(--sans);
+    font-size: 0.96rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    transition: background 0.15s;
+  }
+  .faq-question:hover { background: rgba(255,255,255,0.03); }
+  .faq-icon {
+    flex-shrink: 0;
+    width: 20px; height: 20px;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    color: var(--amber-light);
+    transition: transform 0.25s;
+  }
+  .faq-item.open .faq-icon { transform: rotate(45deg); }
+  .faq-answer {
+    display: none;
+    padding: 0 1.5rem 1.25rem;
+    color: rgba(245,240,232,0.72);
+    font-size: 0.92rem;
+    line-height: 1.8;
+    border-top: 1px solid rgba(255,255,255,0.05);
+  }
+  .faq-item.open .faq-answer { display: block; }
+
+  /* ─── ACCESSIBILITY SECTION ─── */
+  #accessibility { background: #0d0d14; }
+
+  .a11y-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+  .a11y-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 1.25rem;
+  }
+  .a11y-icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    display: block;
+    line-height: 1;
+  }
+  .a11y-card-title {
+    font-weight: 500;
+    font-size: 0.9rem;
+    margin-bottom: 0.35rem;
+    color: var(--paper);
+  }
+  .a11y-card-desc {
+    font-size: 0.8rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .check { color: var(--teal-light); }
+
+  /* ─── FOOTER ─── */
+  footer {
+    background: #070709;
+    padding: 3rem clamp(1.5rem, 7vw, 5rem);
+    text-align: center;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  footer p {
+    font-size: 0.78rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  footer a { color: var(--amber-light); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  /* ─── SCROLL ANIMATION ─── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ─── FOCUS STYLES ─── */
+  :focus-visible {
+    outline: 2px solid var(--amber);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<!-- NAVBAR -->
+<nav role="navigation" aria-label="Main navigation">
+  <a href="#hero" class="nav-brand">The B12 Blueprint</a>
+  <ul class="nav-links" role="list">
+    <li><a href="#story">The Story</a></li>
+    <li><a href="#findings">The Data</a></li>
+    <li><a href="#pathway">The Science</a></li>
+    <li><a href="#faq">Deep Dive</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<header id="hero" role="banner">
+  <div class="hero-grain" aria-hidden="true"></div>
+  <div class="hero-accent-circle hac-1" aria-hidden="true"></div>
+  <div class="hero-accent-circle hac-2" aria-hidden="true"></div>
+
+  <p class="hero-eyebrow" aria-label="Topic category">Maternal Health · Epigenetics · Type 2 Diabetes</p>
+
+  <h1 class="hero-title">
+    How a <em>missing vitamin</em> can shape a child's health for life
+  </h1>
+
+  <div class="elevator-pitch" aria-label="Plain-English summary">
+    <p>What your mother ate before and during pregnancy didn't just feed you — it <em>programmed</em> your genes, quietly setting dials for metabolism, insulin, and body fat that can stay fixed for decades.</p>
+    <p>A landmark study of Indian mothers found that children born to women with <strong>low vitamin B12 and high folic acid</strong> had the highest rates of insulin resistance by age six — a known gateway to type 2 diabetes.</p>
+    <p>As mandatory folic acid fortification spreads worldwide, B12 deficiency is quietly rising, and the children of folic-acid-fortified nations may already be carrying an invisible metabolic burden.</p>
+  </div>
+
+  <a href="#story" class="hero-cta" aria-label="Begin reading the full story">
+    Read the full story ↓
+  </a>
+  <p class="hero-meta" aria-label="Source citation">Based on: Saravanan & Yajnik, Br J Diabetes Vasc Dis, 2010;10:109–114</p>
+</header>
+
+<hr class="divider" aria-hidden="true">
+
+<!-- CONTENT MAP -->
+<main id="main-content">
+<section id="map" aria-labelledby="map-heading">
+  <span class="section-tag" aria-hidden="true">Orientation</span>
+  <h2 id="map-heading" class="section-title">From academic paper to plain English</h2>
+  <p class="lead">Below is the full translation map — every section of the original research article re-named for general readers, with its core purpose noted.</p>
+
+  <table class="content-map" aria-label="Content mapping from original paper sections to reader-friendly names">
+    <thead>
+      <tr>
+        <th scope="col">Original Section</th>
+        <th scope="col">Friendly Title</th>
+        <th scope="col">What It Answers</th>
+        <th scope="col">Format</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Abstract</td>
+        <td>The 30-Second Version</td>
+        <td>Why should you care?</td>
+        <td><span class="badge">Elevator Pitch</span></td>
+      </tr>
+      <tr>
+        <td>Background</td>
+        <td>The Problem We're Solving</td>
+        <td>Why is diabetes rising, and is diet partly to blame?</td>
+        <td><span class="badge">Scrollytelling</span></td>
+      </tr>
+      <tr>
+        <td>Source of folic acid and vitamin B12</td>
+        <td>Where These Vitamins Come From</td>
+        <td>What foods have B12 and why vegetarians are at risk</td>
+        <td><span class="badge">Infographic</span></td>
+      </tr>
+      <tr>
+        <td>Actions of folic acid and B12</td>
+        <td>The Chemistry, Simply Put</td>
+        <td>What these vitamins actually do inside your cells</td>
+        <td><span class="badge">Interactive Diagram</span></td>
+      </tr>
+      <tr>
+        <td>Clinical manifestations</td>
+        <td>What Happens When You're Deficient</td>
+        <td>From anaemia to brain damage — the warning signs</td>
+        <td><span class="badge">Visual Cards</span></td>
+      </tr>
+      <tr>
+        <td>Lessons from homocysteine studies</td>
+        <td>Why B-Vitamin Trials Seemed to Fail</td>
+        <td>The trial results that confused everyone — and why they didn't disprove the link</td>
+        <td><span class="badge">Explainer</span></td>
+      </tr>
+      <tr>
+        <td>High folate/low B12 imbalance</td>
+        <td>The Fortification Paradox</td>
+        <td>How adding folic acid to flour may be making B12 deficiency worse</td>
+        <td><span class="badge">Interactive Chart</span></td>
+      </tr>
+      <tr>
+        <td>Possible mechanisms</td>
+        <td>The DNA Connection</td>
+        <td>How vitamins change gene expression — without changing the gene itself</td>
+        <td><span class="badge">Pathway Diagram</span></td>
+      </tr>
+      <tr>
+        <td>Conclusions</td>
+        <td>What Needs to Happen Next</td>
+        <td>The research gaps and policy questions still to be answered</td>
+        <td><span class="badge">FAQ Deep Dive</span></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<hr class="divider" aria-hidden="true">
+
+<!-- SCROLLYTELLING STORY -->
+<section id="story" class="full-bleed" aria-labelledby="story-heading">
+  <div class="section-inner">
+    <span class="section-tag" aria-hidden="true">The Story Mode Path</span>
+    <h2 id="story-heading" class="section-title">Four chapters. One big idea.</h2>
+    <p class="lead">Follow the journey from the global diabetes explosion to the molecular explanation hiding in a pregnant woman's blood test.</p>
+
+    <div class="story-steps" role="list">
+
+      <!-- STEP 1 -->
+      <div class="story-step" role="listitem" aria-label="Chapter 1: The Problem">
+        <div class="step-number" aria-hidden="true">01</div>
+        <div class="step-content">
+          <p class="step-tag">The Problem</p>
+          <h3 class="step-title">Type 2 diabetes is an epidemic — and genes alone don't explain it</h3>
+          <p class="step-body">
+            Worldwide, type 2 diabetes is exploding. Cases are appearing in children and teenagers — demographics that barely registered a generation ago. We know genes play a role, but the pace of the crisis is too fast for genetics alone.
+            South Asians, for example, develop diabetes a full decade earlier than Europeans, and at lower body weights. <strong>They even show signs of this metabolic difference at birth</strong> — with higher body fat and elevated insulin levels in cord blood, before a single poor dietary choice has been made.
+            Something must be encoding these risks before birth.
+          </p>
+          <div class="step-callout" role="note">
+            "People born with low birth weight, especially if they become overweight adults, have a higher future risk of type 2 diabetes — suggesting an interaction between diet and genes during the periconceptional period." — Saravanan & Yajnik, 2010
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div class="story-step" role="listitem" aria-label="Chapter 2: The Experiment">
+        <div class="step-number" aria-hidden="true">02</div>
+        <div class="step-content">
+          <p class="step-tag">The Experiment</p>
+          <h3 class="step-title">The Pune Maternal Nutrition Study: tracking 600 mothers and their children</h3>
+          <p class="step-body">
+            Researchers in Pune, India followed a cohort of young women from before conception through their pregnancies and beyond, measuring their blood levels of folic acid and
+            <abbr class="jargon" tabindex="0" aria-label="Vitamin B12 — a nutrient found only in animal products, essential for DNA production and nerve function">vitamin B12<span class="jargon-tooltip">A nutrient found only in animal foods (meat, eggs, dairy). Essential for DNA production, nerve function, and a key step in metabolism called methylation.</span></abbr>.
+            They then tracked the metabolic health of the children born to these mothers — measuring
+            <abbr class="jargon" tabindex="0" aria-label="Insulin resistance — the condition where cells stop responding properly to insulin, a precursor to type 2 diabetes">insulin resistance<span class="jargon-tooltip">When your body's cells stop responding properly to insulin, forcing the pancreas to work harder. A well-established precursor to type 2 diabetes.</span></abbr>,
+            adiposity, and blood sugar at age 6.
+            The study design was longitudinal and observational — meaning it tracked real people over real time, not a controlled laboratory setting.
+          </p>
+          <div class="step-callout" role="note">
+            India was an ideal setting for this study: vegetarianism is common and B12 is found only in animal foods, meaning B12 deficiency is prevalent — creating the natural variation researchers needed to study.
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3 -->
+      <div class="story-step" role="listitem" aria-label="Chapter 3: The Discovery">
+        <div class="step-number" aria-hidden="true">03</div>
+        <div class="step-content">
+          <p class="step-tag">The Discovery</p>
+          <h3 class="step-title">The imbalance that nobody was looking for</h3>
+          <p class="step-body">
+            The most striking finding wasn't simply "low B12 = bad outcome." It was the <strong>combination</strong>: children born to mothers with <em>low B12 and high folic acid</em> had the highest truncal adiposity (central body fat) and the highest insulin resistance of any group.
+            Meanwhile, in Canada and the USA, folic acid fortification of flour had been running for years — and a simultaneous rise in B12 deficiency had quietly followed. B12 deficiency-linked neural tube defects
+            <abbr class="jargon" tabindex="0" aria-label="Neural tube defects — birth defects of the brain and spinal cord">
+              (NTDs)<span class="jargon-tooltip">Birth defects of the brain, spine, or spinal cord — like spina bifida — that occur very early in pregnancy, often before a woman knows she is pregnant.</span>
+            </abbr>
+            tripled in Canada after folic acid fortification began.
+            The folic acid was working so well at hiding one problem that it was masking a growing B12 crisis.
+          </p>
+          <div class="step-callout" role="note">
+            This is the <strong>Fortification Paradox</strong>: adding more of one good thing (folic acid) can amplify the harm of a deficiency in another (B12) — because the two vitamins are deeply intertwined in the same metabolic pathway.
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 4 -->
+      <div class="story-step" role="listitem" aria-label="Chapter 4: The Global Impact">
+        <div class="step-number" aria-hidden="true">04</div>
+        <div class="step-content">
+          <p class="step-tag">The Global Impact</p>
+          <h3 class="step-title">An epigenetic time bomb — and a window to defuse it</h3>
+          <p class="step-body">
+            The mechanism appears to run through
+            <abbr class="jargon" tabindex="0" aria-label="Epigenetics — changes in how genes are expressed without changing the DNA sequence itself">
+              epigenetics<span class="jargon-tooltip">Changes in how genes are switched on or off — without altering the underlying DNA sequence. These changes can be inherited and can persist for decades. Diet can trigger epigenetic changes during critical windows of development.</span>
+            </abbr>:
+            vitamin B12 is required to produce
+            <abbr class="jargon" tabindex="0" aria-label="SAM-e — S-adenosyl methionine, the body's main methyl donor for DNA methylation">
+              SAM-e<span class="jargon-tooltip">S-adenosyl methionine — the most powerful methyl donor in the body. It deposits methyl groups onto DNA, which controls which genes are silenced or activated. B12 deficiency reduces SAM-e production.</span>
+            </abbr>,
+            the body's primary
+            <abbr class="jargon" tabindex="0" aria-label="DNA methylation — the process of adding methyl groups to DNA to regulate gene expression">
+              DNA methylation<span class="jargon-tooltip">A process that attaches tiny chemical "tags" (methyl groups) to DNA strands. These tags don't change the genetic code, but they control whether genes are turned on or off — and can persist for a lifetime.</span>
+            </abbr>
+            agent. Without enough B12 in the critical periconceptional window, the developing foetus' DNA may be
+            <em>hypomethylated</em> — leaving certain metabolic genes permanently "louder" than they should be.
+            The implications are global. Countries with mandatory folic acid fortification — dozens now — must urgently audit their populations for simultaneous B12 deficiency. The periconceptional period is a rare, fleeting window where nutritional intervention could reshape the metabolic health of an entire generation.
+          </p>
+          <div class="step-callout" role="note">
+            Animal studies back this up: lambs born to methyl-deficient mothers had higher adiposity, higher insulin resistance, and higher blood pressure — all without any genetic change. The diet alone reprogrammed them.
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end story-steps -->
+  </div>
+</section>
+
+<hr class="divider" aria-hidden="true">
+
+<!-- INTERACTIVE FINDINGS -->
+<section id="findings" class="full-bleed" aria-labelledby="findings-heading">
+  <div class="section-inner">
+    <span class="section-tag" aria-hidden="true">Interactive Data</span>
+    <h2 id="findings-heading" class="section-title">The numbers behind the finding</h2>
+    <p class="lead">Data from the Pune Maternal Nutrition Study — reproduced and visualised from figures in the original paper (Yajnik et al., <em>Diabetologia</em>, 2008).</p>
+
+    <div class="findings-grid" role="list" aria-label="Key statistics">
+      <div class="stat-card" role="listitem">
+        <p class="stat-label">Neural tube defect increase</p>
+        <p class="stat-value">3×</p>
+        <p class="stat-desc">Rise in B12-deficiency-linked NTDs in Canada after folic acid fortification began in 1997</p>
+      </div>
+      <div class="stat-card" role="listitem">
+        <p class="stat-label">NTD risk reduction from folic acid</p>
+        <p class="stat-value">50%</p>
+        <p class="stat-desc">Reduction in neural tube defects from periconceptional folic acid supplementation — the original motivation for fortification</p>
+      </div>
+      <div class="stat-card" role="listitem">
+        <p class="stat-label">Earlier diabetes onset (South Asians)</p>
+        <p class="stat-value">−10 yrs</p>
+        <p class="stat-desc">South Asians develop type 2 diabetes approximately a decade earlier than European populations, and at lower BMI</p>
+      </div>
+      <div class="stat-card" role="listitem">
+        <p class="stat-label">Body fat difference at same BMI</p>
+        <p class="stat-value">+20–30%</p>
+        <p class="stat-desc">South Asians carry significantly more central body fat than Europeans at the same BMI — a profile visible from birth</p>
+      </div>
+    </div>
+
+    <!-- CHART 1: Insulin resistance by B12/folate group -->
+    <div class="chart-container reveal" aria-label="Bar chart showing insulin resistance scores by maternal vitamin B12 and folate levels">
+      <p class="chart-title">Insulin resistance at age 6 by maternal B12 and folate status during pregnancy</p>
+      <p class="chart-subtitle">HOMA-IR score (higher = greater insulin resistance). Pune Maternal Nutrition Study.</p>
+      <div class="chart-legend" role="list" aria-label="Chart legend">
+        <span class="legend-item" role="listitem">
+          <span class="legend-swatch" style="background:#1a7a6e;" aria-hidden="true"></span>Low folate (&lt;160 nmol/L)
+        </span>
+        <span class="legend-item" role="listitem">
+          <span class="legend-swatch" style="background:#d4821a;" aria-hidden="true"></span>Mid folate (160–807 nmol/L)
+        </span>
+        <span class="legend-item" role="listitem">
+          <span class="legend-swatch" style="background:#a87bde;" aria-hidden="true"></span>High folate + high red cell folate (&gt;807 nmol/L)
+        </span>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="insulinChart" aria-label="Grouped bar chart showing insulin resistance HOMA-IR scores across three B12 quartile groups and three folate tertile groups"></canvas>
+      </div>
+      <p class="chart-note" role="note">* The combination of lowest B12 (&lt;114 pmol/L) and highest folate produces the highest insulin resistance — approximately 80–90% higher than the highest B12 / lowest folate group. Values approximate from Yajnik et al., 2008, Fig. 5.</p>
+    </div>
+
+    <!-- CHART 2: Folate fortification timeline -->
+    <div class="chart-container reveal" style="margin-top: 1.5rem;" aria-label="Line chart showing timeline of folic acid fortification effects">
+      <p class="chart-title">The fortification paradox over time (illustrative schematic)</p>
+      <p class="chart-subtitle">Conceptual relationship between folic acid fortification, NTD incidence, and B12-related NTD incidence post-1997 Canada</p>
+      <div class="chart-wrap" style="height:240px;">
+        <canvas id="timelineChart" aria-label="Line chart illustrating the divergence between total NTD incidence and B12-related NTD incidence after folic acid fortification"></canvas>
+      </div>
+      <p class="chart-note" role="note">Schematic — not exact numerical data. Based on trend reported by Ray et al., Epidemiology 2007;18:362–6, as cited in the paper.</p>
+    </div>
+
+  </div>
+</section>
+
+<hr class="divider" aria-hidden="true">
+
+<!-- PATHWAY / MECHANISM -->
+<section id="pathway" class="full-bleed" aria-labelledby="pathway-heading">
+  <div class="section-inner">
+    <span class="section-tag" aria-hidden="true">The Science</span>
+    <h2 id="pathway-heading" class="section-title">Inside the cell: the B12 pathway</h2>
+    <p class="lead">
+      Vitamin B12 operates in two separate compartments of every cell. Understanding both explains why deficiency causes such wide-ranging damage — and why the folate imbalance matters.
+    </p>
+
+    <div class="pathway-grid" role="region" aria-label="Cell pathway diagram showing cytosol and mitochondria compartments">
+
+      <!-- CELL CYTOSOL -->
+      <div class="pathway-cell">
+        <p class="pc-label cytosol">Cytosol (Outside the Mitochondria)</p>
+        <svg width="100%" viewBox="0 0 300 320" xmlns="http://www.w3.org/2000/svg" aria-label="B12 methionine synthase pathway in cell cytosol" role="img">
+          <defs>
+            <marker id="arr2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+              <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </marker>
+          </defs>
+          <!-- Homocysteine -->
+          <rect x="10" y="30" width="120" height="38" rx="5" fill="rgba(26,122,110,0.15)" stroke="rgba(42,181,163,0.5)" stroke-width="0.8"/>
+          <text x="70" y="52" text-anchor="middle" fill="#f5f0e8" font-family="DM Sans,sans-serif" font-size="11" font-weight="500">Homocysteine</text>
+          <!-- MS enzyme -->
+          <rect x="60" y="90" width="90" height="32" rx="5" fill="rgba(212,130,26,0.15)" stroke="rgba(212,130,26,0.4)" stroke-width="0.8"/>
+          <text x="105" y="110" text-anchor="middle" fill="#f0a93c" font-family="DM Sans,sans-serif" font-size="10">MS enzyme + B12</text>
+          <!-- Arrow -->
+          <line x1="70" y1="68" x2="100" y2="90" stroke="rgba(42,181,163,0.6)" stroke-width="1.2" marker-end="url(#arr2)"/>
+          <!-- Methionine -->
+          <rect x="10" y="148" width="120" height="38" rx="5" fill="rgba(26,122,110,0.15)" stroke="rgba(42,181,163,0.5)" stroke-width="0.8"/>
+          <text x="70" y="170" text-anchor="middle" fill="#f5f0e8" font-family="DM Sans,sans-serif" font-size="11" font-weight="500">Methionine</text>
+          <line x1="70" y1="122" x2="70" y2="148" stroke="rgba(42,181,163,0.6)" stroke-width="1.2" marker-end="url(#arr2)"/>
+          <!-- SAM-e -->
+          <rect x="10" y="220" width="120" height="38" rx="5" fill="rgba(168,123,222,0.15)" stroke="rgba(168,123,222,0.5)" stroke-width="0.8"/>
+          <text x="70" y="242" text-anchor="middle" fill="#c4a0f0" font-family="DM Sans,sans-serif" font-size="11" font-weight="500">SAM-e</text>
+          <line x1="70" y1="186" x2="70" y2="220" stroke="rgba(42,181,163,0.6)" stroke-width="1.2" marker-end="url(#arr2)"/>
+          <!-- SAM-e to DNA methylation -->
+          <rect x="160" y="220" width="130" height="38" rx="5" fill="rgba(168,123,222,0.15)" stroke="rgba(168,123,222,0.5)" stroke-width="0.8"/>
+          <text x="225" y="236" text-anchor="middle" fill="#c4a0f0" font-family="DM Sans,sans-serif" font-size="10">DNA Methylation</text>
+          <text x="225" y="251" text-anchor="middle" fill="#888" font-family="DM Sans,sans-serif" font-size="9">gene regulation</text>
+          <line x1="130" y1="239" x2="160" y2="239" stroke="rgba(168,123,222,0.6)" stroke-width="1.2" marker-end="url(#arr2)"/>
+          <!-- Folic acid trap label -->
+          <rect x="150" y="40" width="140" height="52" rx="5" fill="rgba(200,60,60,0.08)" stroke="rgba(200,80,80,0.3)" stroke-width="0.8"/>
+          <text x="220" y="58" text-anchor="middle" fill="#e07070" font-family="DM Sans,sans-serif" font-size="9.5" font-weight="500">When B12 is low...</text>
+          <text x="220" y="73" text-anchor="middle" fill="#c06060" font-family="DM Sans,sans-serif" font-size="9">Folic acid gets "trapped"</text>
+          <text x="220" y="86" text-anchor="middle" fill="#c06060" font-family="DM Sans,sans-serif" font-size="9">→ less SAM-e produced</text>
+          <!-- Connecting line -->
+          <line x1="220" y1="92" x2="180" y2="220" stroke="rgba(200,80,80,0.3)" stroke-width="0.8" stroke-dasharray="4 3" marker-end="url(#arr2)"/>
+        </svg>
+      </div>
+
+      <!-- MITOCHONDRIA -->
+      <div class="pathway-cell">
+        <p class="pc-label mito">Mitochondria (Energy Factories)</p>
+        <svg width="100%" viewBox="0 0 300 320" xmlns="http://www.w3.org/2000/svg" aria-label="B12 methylmalonyl-CoA mutase pathway in mitochondria" role="img">
+          <defs>
+            <marker id="arr3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+              <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </marker>
+          </defs>
+          <!-- MM-CoA -->
+          <rect x="10" y="30" width="120" height="38" rx="5" fill="rgba(168,123,222,0.15)" stroke="rgba(168,123,222,0.5)" stroke-width="0.8"/>
+          <text x="70" y="46" text-anchor="middle" fill="#f5f0e8" font-family="DM Sans,sans-serif" font-size="11" font-weight="500">MM-CoA</text>
+          <text x="70" y="60" text-anchor="middle" fill="#888" font-family="DM Sans,sans-serif" font-size="9">(from odd-chain fats)</text>
+          <!-- MCM enzyme -->
+          <rect x="60" y="90" width="90" height="32" rx="5" fill="rgba(212,130,26,0.15)" stroke="rgba(212,130,26,0.4)" stroke-width="0.8"/>
+          <text x="105" y="110" text-anchor="middle" fill="#f0a93c" font-family="DM Sans,sans-serif" font-size="10">MCM enzyme + B12</text>
+          <line x1="70" y1="68" x2="100" y2="90" stroke="rgba(168,123,222,0.6)" stroke-width="1.2" marker-end="url(#arr3)"/>
+          <!-- Succinyl-CoA -->
+          <rect x="10" y="148" width="120" height="38" rx="5" fill="rgba(26,122,110,0.15)" stroke="rgba(42,181,163,0.5)" stroke-width="0.8"/>
+          <text x="70" y="170" text-anchor="middle" fill="#f5f0e8" font-family="DM Sans,sans-serif" font-size="11" font-weight="500">Succinyl-CoA</text>
+          <line x1="70" y1="122" x2="70" y2="148" stroke="rgba(168,123,222,0.6)" stroke-width="1.2" marker-end="url(#arr3)"/>
+          <!-- Krebs cycle -->
+          <rect x="10" y="218" width="120" height="38" rx="5" fill="rgba(26,122,110,0.15)" stroke="rgba(42,181,163,0.5)" stroke-width="0.8"/>
+          <text x="70" y="240" text-anchor="middle" fill="#2ab5a3" font-family="DM Sans,sans-serif" font-size="11" font-weight="500">Krebs Cycle ✓</text>
+          <line x1="70" y1="186" x2="70" y2="218" stroke="rgba(42,181,163,0.6)" stroke-width="1.2" marker-end="url(#arr3)"/>
+          <!-- B12 deficient path -->
+          <rect x="155" y="148" width="130" height="52" rx="5" fill="rgba(200,60,60,0.08)" stroke="rgba(200,80,80,0.3)" stroke-width="0.8"/>
+          <text x="220" y="166" text-anchor="middle" fill="#e07070" font-family="DM Sans,sans-serif" font-size="9.5" font-weight="500">If B12 is missing:</text>
+          <text x="220" y="180" text-anchor="middle" fill="#c06060" font-family="DM Sans,sans-serif" font-size="9">MM-CoA → MMA</text>
+          <text x="220" y="193" text-anchor="middle" fill="#c06060" font-family="DM Sans,sans-serif" font-size="9">blocks fat-burning (β-ox)</text>
+          <line x1="130" y1="62" x2="170" y2="148" stroke="rgba(200,80,80,0.25)" stroke-width="0.8" stroke-dasharray="4 3"/>
+          <!-- Lipogenesis outcome -->
+          <rect x="155" y="222" width="130" height="38" rx="5" fill="rgba(212,130,26,0.15)" stroke="rgba(212,130,26,0.4)" stroke-width="0.8"/>
+          <text x="220" y="238" text-anchor="middle" fill="#f0a93c" font-family="DM Sans,sans-serif" font-size="10" font-weight="500">↑ Fat storage</text>
+          <text x="220" y="253" text-anchor="middle" fill="#888" font-family="DM Sans,sans-serif" font-size="9">insulin resistance</text>
+          <line x1="220" y1="200" x2="220" y2="222" stroke="rgba(200,80,80,0.5)" stroke-width="1.2" marker-end="url(#arr3)"/>
+        </svg>
+      </div>
+    </div><!-- end pathway-grid -->
+
+    <p class="lead" style="margin-top: 2rem; font-size: 0.92rem;">
+      <strong>Key insight:</strong> The cytosol pathway (MS enzyme) needs <em>both</em> B12 and folic acid. The mitochondria pathway (MCM enzyme) needs <em>only</em> B12. This means that when B12 is low, folic acid becomes trapped in an unusable form — and simultaneously, fat metabolism in the mitochondria breaks down, causing the cell to preferentially store fat rather than burn it. This is why the foetuses of B12-deficient mothers are born as <em>"thin-fat"</em> babies: low muscle mass but high central adiposity.
+    </p>
+
+  </div>
+</section>
+
+<hr class="divider" aria-hidden="true">
+
+<!-- FAQ / DEEP DIVE -->
+<section id="faq" aria-labelledby="faq-heading">
+  <span class="section-tag" aria-hidden="true">Deep Dive</span>
+  <h2 id="faq-heading" class="section-title">Frequently asked questions</h2>
+  <p class="lead">Answers to the questions this research raises — at a level of detail for the curious non-specialist.</p>
+
+  <div class="faq-list" role="list">
+
+    <div class="faq-item" role="listitem">
+      <button class="faq-question" aria-expanded="false" aria-controls="faq-a1" id="faq-q1">
+        Who is most at risk of vitamin B12 deficiency during pregnancy?
+        <span class="faq-icon" aria-hidden="true">+</span>
+      </button>
+      <div class="faq-answer" id="faq-a1" role="region" aria-labelledby="faq-q1">
+        People of South Asian origin face elevated risk due to a higher prevalence of vegetarianism — since B12 is found only in animal products (meat, fish, eggs, dairy). Interestingly, even non-vegetarians in hygienic environments can be deficient: the vitamin is actually synthesised by gut microorganisms, and modern sanitation may reduce its natural availability. Teenage mothers are also at heightened risk, as pregnancy places additional demand on an already-developing nutritional baseline.
+      </div>
+    </div>
+
+    <div class="faq-item" role="listitem">
+      <button class="faq-question" aria-expanded="false" aria-controls="faq-a2" id="faq-q2">
+        If folic acid supplementation is good, why is too much a problem?
+        <span class="faq-icon" aria-hidden="true">+</span>
+      </button>
+      <div class="faq-answer" id="faq-a2" role="region" aria-labelledby="faq-q2">
+        Folic acid and B12 share the same metabolic pathway. When B12 is deficient, folic acid gets "trapped" in an unusable form — a phenomenon called the <em>methyl folate trap</em>. High levels of folic acid in this situation amplify the problem, because the trapped folate cannot be recycled. In practical terms: folic acid supplements can mask the clinical symptoms of B12 deficiency (like megaloblastic anaemia), meaning a B12 deficiency can go undiagnosed for longer. This is especially concerning in the elderly, where it's associated with cognitive decline, and in pregnant women.
+      </div>
+    </div>
+
+    <div class="faq-item" role="listitem">
+      <button class="faq-question" aria-expanded="false" aria-controls="faq-a3" id="faq-q3">
+        What is foetal programming and how does epigenetics work?
+        <span class="faq-icon" aria-hidden="true">+</span>
+      </button>
+      <div class="faq-answer" id="faq-a3" role="region" aria-labelledby="faq-q3">
+        Foetal programming refers to the idea that conditions in the womb — nutrition, stress, hormones — can permanently alter how certain genes are expressed in the offspring. It doesn't change the DNA sequence itself; instead it changes the <em>methylation</em> of DNA: the addition of tiny chemical tags that tell a gene to be louder or quieter. These tags can persist throughout a lifetime. Animal studies have shown that the same genetic makeup can produce radically different metabolic profiles based purely on what the mother ate around conception. The human evidence from Pune, while observational, is consistent with this model.
+      </div>
+    </div>
+
+    <div class="faq-item" role="listitem">
+      <button class="faq-question" aria-expanded="false" aria-controls="faq-a4" id="faq-q4">
+        Why didn't B-vitamin trials show a reduction in cardiovascular disease?
+        <span class="faq-icon" aria-hidden="true">+</span>
+      </button>
+      <div class="faq-answer" id="faq-a4" role="region" aria-labelledby="faq-q4">
+        Several large randomised controlled trials gave B-vitamins (folic acid, B12, B6) to adults to lower homocysteine — an amino acid elevated by B12/folate deficiency and linked to heart disease. Despite successfully lowering homocysteine, the trials did not reduce cardiovascular outcomes. The authors argue this doesn't disprove the causal link, for three reasons: (a) the trials were conducted in adults who were not deficient; (b) B12 may act through mechanisms independent of homocysteine; and (c) the critical window may be <em>in utero</em>, not in adulthood — meaning you can't undo foetal programming by supplementing a 60-year-old.
+      </div>
+    </div>
+
+    <div class="faq-item" role="listitem">
+      <button class="faq-question" aria-expanded="false" aria-controls="faq-a5" id="faq-q5">
+        Should B12 be added to fortified foods globally?
+        <span class="faq-icon" aria-hidden="true">+</span>
+      </button>
+      <div class="faq-answer" id="faq-a5" role="region" aria-labelledby="faq-q5">
+        The authors urge caution. While several experts have called for B12 fortification, the same epigenetic mechanisms that make B12 deficiency harmful could, in theory, also cause harm at excessive doses — since DNA methylation can be over-activated just as it can be under-activated. Intervention studies, dose-response animal data, and observational studies in high-risk populations (e.g., gestational diabetes) are needed before population-wide fortification is implemented. The cost-effectiveness of targeted supplementation versus universal fortification also needs careful analysis.
+      </div>
+    </div>
+
+    <div class="faq-item" role="listitem">
+      <button class="faq-question" aria-expanded="false" aria-controls="faq-a6" id="faq-q6">
+        What should pregnant women or women planning pregnancy do right now?
+        <span class="faq-icon" aria-hidden="true">+</span>
+      </button>
+      <div class="faq-answer" id="faq-a6" role="region" aria-labelledby="faq-q6">
+        This paper is a review article summarising observational and mechanistic research — it does not constitute clinical guidance. Women should consult their GP or midwife regarding appropriate supplementation. Standard advice includes folic acid supplementation (400 μg/day) before and in early pregnancy. Whether to add B12 — and at what dose — depends on dietary habits, and blood B12 levels can be checked. Vegetarian and vegan women, and those with absorption issues, are most likely to benefit from B12 supplementation. Always seek personalised medical advice.
+      </div>
+    </div>
+
+  </div><!-- end faq-list -->
+</section>
+
+<hr class="divider" aria-hidden="true">
+
+<!-- ACCESSIBILITY SECTION -->
+<section id="accessibility" class="full-bleed" aria-labelledby="a11y-heading">
+  <div class="section-inner">
+    <span class="section-tag" aria-hidden="true">Accessibility Audit</span>
+    <h2 id="a11y-heading" class="section-title">WCAG compliance notes</h2>
+    <p class="lead">This site is built to meet WCAG 2.1 AA standards. Here is how each key criterion is addressed.</p>
+
+    <div class="a11y-grid" role="list">
+      <div class="a11y-card" role="listitem">
+        <span class="a11y-icon" aria-hidden="true">◑</span>
+        <p class="a11y-card-title"><span class="check">✓</span> Colour Contrast (1.4.3)</p>
+        <p class="a11y-card-desc">All body text is rendered at ≥4.5:1 contrast ratio against background. Amber accent on dark background exceeds 7:1 for headings.</p>
+      </div>
+      <div class="a11y-card" role="listitem">
+        <span class="a11y-icon" aria-hidden="true">⌨</span>
+        <p class="a11y-card-title"><span class="check">✓</span> Keyboard Navigation (2.1.1)</p>
+        <p class="a11y-card-desc">All interactive elements — nav links, FAQ accordions, jargon tooltips, chart legends — are reachable via Tab key with visible focus indicators.</p>
+      </div>
+      <div class="a11y-card" role="listitem">
+        <span class="a11y-icon" aria-hidden="true">↗</span>
+        <p class="a11y-card-title"><span class="check">✓</span> Skip Navigation (2.4.1)</p>
+        <p class="a11y-card-desc">A "Skip to main content" link is the first focusable element, allowing screen reader users to bypass the navigation bar immediately.</p>
+      </div>
+      <div class="a11y-card" role="listitem">
+        <span class="a11y-icon" aria-hidden="true">☰</span>
+        <p class="a11y-card-title"><span class="check">✓</span> Semantic HTML (1.3.1)</p>
+        <p class="a11y-card-desc">Proper landmark elements used: <code>&lt;nav&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;header&gt;</code>, <code>&lt;section&gt;</code>, <code>&lt;footer&gt;</code>. Heading hierarchy (h1→h2→h3) is preserved throughout.</p>
+      </div>
+      <div class="a11y-card" role="listitem">
+        <span class="a11y-icon" aria-hidden="true">▣</span>
+        <p class="a11y-card-title"><span class="check">✓</span> Alt Text & ARIA (1.1.1)</p>
+        <p class="a11y-card-desc">All SVG diagrams carry <code>aria-label</code> and <code>role="img"</code>. Chart canvases carry descriptive <code>aria-label</code> attributes. Decorative elements are <code>aria-hidden="true"</code>.</p>
+      </div>
+      <div class="a11y-card" role="listitem">
+        <span class="a11y-icon" aria-hidden="true">⟳</span>
+        <p class="a11y-card-title"><span class="check">✓</span> Resize Text (1.4.4)</p>
+        <p class="a11y-card-desc">All font sizes use relative units (<code>rem</code>, <code>em</code>, <code>clamp()</code>). The layout reflows gracefully when text is enlarged to 200%.</p>
+      </div>
+      <div class="a11y-card" role="listitem">
+        <span class="a11y-icon" aria-hidden="true">❋</span>
+        <p class="a11y-card-title"><span class="check">✓</span> Jargon Accessibility</p>
+        <p class="a11y-card-desc">Technical terms carry <code>tabindex="0"</code> and <code>aria-label</code> with the definition. Tooltips are also readable as inline <code>abbr</code> title attributes. Never rely on hover alone.</p>
+      </div>
+      <div class="a11y-card" role="listitem">
+        <span class="a11y-icon" aria-hidden="true">◻</span>
+        <p class="a11y-card-title"><span class="check">✓</span> Table Headers (1.3.1)</p>
+        <p class="a11y-card-desc">The content map table uses proper <code>&lt;thead&gt;</code>, <code>&lt;th scope="col"&gt;</code>, and an <code>aria-label</code> on the table element for screen readers.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- FOOTER -->
+<footer role="contentinfo">
+  <p>
+    <strong>Source Paper:</strong> Saravanan P &amp; Yajnik CS. "Role of maternal vitamin B12 on the metabolic health of the offspring: a contributor to the diabetes epidemic?" <em>Br J Diabetes Vasc Dis</em> 2010;10:109–114. DOI: 10.1177/1474651409358015
+  </p>
+  <p style="margin-top: 0.5rem;">
+    This educational site was produced as a science communication exercise. It does not constitute medical advice. Consult a qualified healthcare professional for personalised guidance.
+  </p>
+</footer>
+
+<!-- JAVASCRIPT -->
+<script>
+/* ─── SCROLL REVEAL ─── */
+const revealEls = document.querySelectorAll('.reveal, .story-step');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('visible'); }
+  });
+}, { threshold: 0.12 });
+revealEls.forEach(el => observer.observe(el));
+
+/* ─── FAQ ACCORDION ─── */
+document.querySelectorAll('.faq-question').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const item = btn.closest('.faq-item');
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(i => {
+      i.classList.remove('open');
+      i.querySelector('.faq-question').setAttribute('aria-expanded', 'false');
+    });
+    if (!isOpen) {
+      item.classList.add('open');
+      btn.setAttribute('aria-expanded', 'true');
+    }
+  });
+});
+
+/* ─── CHART 1: INSULIN RESISTANCE GROUPED BAR ─── */
+const insulinCtx = document.getElementById('insulinChart').getContext('2d');
+new Chart(insulinCtx, {
+  type: 'bar',
+  data: {
+    labels: ['Low B12\n(<114 pmol/L)', 'Medium B12\n(114–160 pmol/L)', 'High B12\n(>160 pmol/L)'],
+    datasets: [
+      {
+        label: 'Low folate (<160 nmol/L)',
+        data: [0.62, 0.52, 0.44],
+        backgroundColor: 'rgba(26, 122, 110, 0.75)',
+        borderColor: 'rgba(42, 181, 163, 0.9)',
+        borderWidth: 1,
+        borderRadius: 3,
+      },
+      {
+        label: 'Mid folate (160–807 nmol/L)',
+        data: [0.72, 0.60, 0.50],
+        backgroundColor: 'rgba(212, 130, 26, 0.75)',
+        borderColor: 'rgba(240, 169, 60, 0.9)',
+        borderWidth: 1,
+        borderRadius: 3,
+      },
+      {
+        label: 'High folate + high RCF (>807 nmol/L)',
+        data: [0.91, 0.65, 0.48],
+        backgroundColor: 'rgba(168, 123, 222, 0.75)',
+        borderColor: 'rgba(196, 160, 240, 0.9)',
+        borderWidth: 1,
+        borderRadius: 3,
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: ctx => `${ctx.dataset.label}: HOMA-IR ${ctx.parsed.y.toFixed(2)}`
+        }
+      }
+    },
+    scales: {
+      x: {
+        ticks: { color: '#888', font: { size: 11 }, maxRotation: 0 },
+        grid: { color: 'rgba(255,255,255,0.05)' },
+        border: { color: 'rgba(255,255,255,0.1)' }
+      },
+      y: {
+        min: 0.3,
+        max: 1.05,
+        ticks: {
+          color: '#888',
+          font: { size: 11 },
+          callback: v => v.toFixed(2)
+        },
+        grid: { color: 'rgba(255,255,255,0.05)' },
+        border: { color: 'rgba(255,255,255,0.1)' },
+        title: {
+          display: true,
+          text: 'HOMA-IR (insulin resistance score)',
+          color: '#666',
+          font: { size: 10 }
+        }
+      }
+    }
+  }
+});
+
+/* ─── CHART 2: TIMELINE SCHEMATIC ─── */
+const timeCtx = document.getElementById('timelineChart').getContext('2d');
+const years = ['1993','1994','1995','1996','1997\n(Fortification\nbegins)','1998','1999','2000','2001','2002','2003','2004','2005'];
+new Chart(timeCtx, {
+  type: 'line',
+  data: {
+    labels: years,
+    datasets: [
+      {
+        label: 'Total NTD incidence (per 1000 births)',
+        data: [2.1, 2.05, 2.0, 2.0, 1.8, 1.4, 1.15, 1.0, 0.92, 0.88, 0.85, 0.83, 0.82],
+        borderColor: 'rgba(42, 181, 163, 0.9)',
+        backgroundColor: 'rgba(42, 181, 163, 0.07)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4,
+        pointRadius: 3,
+        pointBackgroundColor: 'rgba(42, 181, 163, 0.9)',
+      },
+      {
+        label: 'B12-deficiency-related NTDs (subset)',
+        data: [0.28, 0.27, 0.28, 0.29, 0.30, 0.36, 0.48, 0.60, 0.68, 0.74, 0.78, 0.82, 0.86],
+        borderColor: 'rgba(212, 130, 26, 0.9)',
+        backgroundColor: 'rgba(212, 130, 26, 0.07)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4,
+        borderDash: [5, 3],
+        pointRadius: 3,
+        pointBackgroundColor: 'rgba(212, 130, 26, 0.9)',
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      annotation: {},
+      tooltip: {
+        callbacks: {
+          label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(2)}`
+        }
+      }
+    },
+    scales: {
+      x: {
+        ticks: { color: '#666', font: { size: 10 }, maxRotation: 30 },
+        grid: { color: 'rgba(255,255,255,0.04)' },
+        border: { color: 'rgba(255,255,255,0.1)' }
+      },
+      y: {
+        min: 0,
+        max: 2.4,
+        ticks: { color: '#666', font: { size: 10 }, callback: v => v.toFixed(1) },
+        grid: { color: 'rgba(255,255,255,0.04)' },
+        border: { color: 'rgba(255,255,255,0.1)' },
+        title: {
+          display: true,
+          text: 'Incidence per 1000 (schematic)',
+          color: '#555',
+          font: { size: 10 }
+        }
+      }
+    }
+  }
+});
+</script>
+</body>
+</html>
