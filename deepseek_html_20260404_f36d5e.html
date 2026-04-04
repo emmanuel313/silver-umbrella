@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>NEBULA STRIKE | Cosmic Aim Trainer</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      min-height: 100vh;
+      background: radial-gradient(circle at 20% 30%, #0a0f1e, #03060c);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Segoe UI', 'Poppins', 'Orbitron', 'Courier New', monospace;
+      padding: 20px;
+      margin: 0;
+      cursor: crosshair;
+    }
+
+    /* Game container */
+    .game-container {
+      background: rgba(10, 20, 30, 0.45);
+      backdrop-filter: blur(2px);
+      border-radius: 3rem;
+      padding: 1.2rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(80, 180, 255, 0.3);
+    }
+
+    canvas {
+      display: block;
+      margin: 0 auto;
+      border-radius: 1.8rem;
+      box-shadow: 0 0 0 2px rgba(0, 255, 255, 0.2), 0 0 0 5px rgba(0, 0, 0, 0.3), 0 20px 35px rgba(0, 0, 0, 0.5);
+      cursor: crosshair;
+      transition: all 0.2s ease;
+      width: 100%;
+      height: auto;
+      background: #010514;
+    }
+
+    /* UI Panel */
+    .stats-panel {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-top: 1.2rem;
+      margin-bottom: 0.8rem;
+      padding: 0.6rem 1.8rem;
+      background: rgba(0, 5, 15, 0.7);
+      backdrop-filter: blur(8px);
+      border-radius: 3rem;
+      border: 1px solid rgba(0, 255, 255, 0.4);
+      font-weight: bold;
+    }
+
+    .stat {
+      background: linear-gradient(135deg, #001d2d, #000a14);
+      padding: 0.5rem 1.2rem;
+      border-radius: 2rem;
+      color: #bbf0ff;
+      text-shadow: 0 0 6px #00ccff;
+      letter-spacing: 1px;
+      font-size: 1.2rem;
+      display: flex;
+      gap: 0.6rem;
+      align-items: baseline;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.5), 0 3px 6px rgba(0,0,0,0.3);
+    }
+
+    .stat span:first-child {
+      font-size: 0.8rem;
+      font-weight: 400;
+      text-transform: uppercase;
+      opacity: 0.8;
+    }
+
+    .stat span:last-child {
+      font-size: 1.7rem;
+      font-weight: 800;
+      font-family: 'Orbitron', monospace;
+      color: #7efff2;
+      text-shadow: 0 0 10px #0ff;
+    }
+
+    .multiplier-badge {
+      background: radial-gradient(circle at 30% 10%, #2a0f3a, #10061c);
+      border-left: 3px solid #ff44dd;
+    }
+    .multiplier-badge span:last-child {
+      color: #ffa0ff;
+      text-shadow: 0 0 8px #ff44dd;
+    }
+
+    button {
+      background: linear-gradient(95deg, #0a1f2e, #02121f);
+      border: none;
+      font-family: 'Orbitron', monospace;
+      font-weight: bold;
+      font-size: 1.1rem;
+      padding: 0.6rem 1.8rem;
+      border-radius: 2.5rem;
+      color: #bbf0ff;
+      letter-spacing: 1.5px;
+      cursor: pointer;
+      transition: 0.2s;
+      box-shadow: 0 5px 0 #00101c;
+      border: 1px solid #2c9fbb;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      background: linear-gradient(95deg, #123a50, #021a2a);
+      box-shadow: 0 7px 0 #00101c;
+      color: #ffffff;
+      text-shadow: 0 0 5px cyan;
+    }
+    button:active {
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 #00101c;
+    }
+
+    .status-tag {
+      background: #000000aa;
+      border-radius: 2rem;
+      padding: 0.3rem 1.2rem;
+      font-size: 0.9rem;
+      font-weight: bold;
+      color: #c0eaff;
+      backdrop-filter: blur(4px);
+    }
+
+    @media (max-width: 860px) {
+      .stat span:last-child { font-size: 1.3rem; }
+      .stat { padding: 0.3rem 1rem; }
+      button { padding: 0.4rem 1.2rem; font-size: 0.9rem; }
+      .stats-panel { gap: 0.5rem; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+<div>
+  <div class="game-container">
+    <canvas id="gameCanvas" width="1000" height="650" style="width:100%; height:auto; max-width:1000px; aspect-ratio:1000/650"></canvas>
+    <div class="stats-panel">
+      <div class="stat"><span>✨ SCORE</span><span id="scoreValue">0</span></div>
+      <div class="stat"><span>⚡ COMBO</span><span id="multiplierValue">1.0x</span></div>
+      <div class="stat"><span>⏱️ TIME</span><span id="timerValue">30.0</span></div>
+      <div class="stat"><span>🏆 HIGH</span><span id="highScoreValue">0</span></div>
+      <button id="resetGameBtn">🌀 NEW STRIKE</button>
+    </div>
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 0.5rem 0.3rem 0.5rem;">
+      <div class="status-tag">🎯 TAP / CLICK on GLOWING ORBS</div>
+      <div class="status-tag" style="background: #0a1020cc;">💥 FAST = HIGH COMBO</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function(){
+    // ------------------- CANVAS SETUP -------------------
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Dimensions (fixed logical 1000x650)
+    const CANVAS_W = 1000;
+    const CANVAS_H = 650;
+    canvas.width = CANVAS_W;
+    canvas.height = CANVAS_H;
+
+    // ------------------- GAME STATE -------------------
+    let gameActive = false;         // whether game is running
+    let score = 0;
+    let multiplier = 1.0;
+    let timeLeft = 30.0;            // seconds
+    let highScore = 0;
+
+    // Load highscore from localStorage
+    try {
+      const saved = localStorage.getItem('nebulaStrikeHigh');
+      if(saved && !isNaN(parseInt(saved))) highScore = parseInt(saved);
+    } catch(e) { /* silent */ }
+
+    // Orb array & particle array
+    let orbs = [];
+    let particles = [];
+    let floatingTexts = [];   // popup +point effects
+
+    // Combo & decay management
+    let lastHitTimestamp = 0;
+    let lastFrameTimestamp = 0;
+    let lastSpawnTime = 0;
+    
+    // Dynamic spawn delay (seconds)
+    let spawnDelay = 0.65;      // will adapt based on score
+    const MAX_ORBS = 18;
+    
+    // Multiplier limits
+    const MAX_MULTIPLIER = 4.0;
+    const MULTIPLIER_DECAY_RATE = 1.8;   // per second
+    const COMBO_TIMEOUT = 0.85;           // seconds after last hit, multiplier decays
+    
+    // Game loop ID
+    let animationId = null;
+    
+    // ------------------- HELPER FUNCTIONS -------------------
+    function updateHighScoreUI(){
+      document.getElementById('highScoreValue').innerText = highScore;
+    }
+    function updateScoreUI(){
+      document.getElementById('scoreValue').innerText = Math.floor(score);
+    }
+    function updateMultiplierUI(){
+      document.getElementById('multiplierValue').innerText = multiplier.toFixed(1)+'x';
+    }
+    function updateTimerUI(){
+      document.getElementById('timerValue').innerText = timeLeft.toFixed(1);
+    }
+    
+    // Save highscore
+    function saveHighScore(){
+      let intScore = Math.floor(score);
+      if(intScore > highScore){
+        highScore = intScore;
+        try{
+          localStorage.setItem('nebulaStrikeHigh', highScore);
+        }catch(e){}
+        updateHighScoreUI();
+      }
+    }
+    
+    // Spawn a new glowing orb
+    function spawnOrb(nowTime){
+      if(!gameActive) return;
+      if(orbs.length >= MAX_ORBS) return;
+      
+      // Dynamic spawn delay based on score (more score = faster spawn)
+      let dynamicDelay = Math.max(0.38, 0.75 - Math.min(0.4, score / 280));
+      spawnDelay = dynamicDelay;
+      
+      // Random radius (starting size)
+      const startRadius = 17;
+      const minRadius = 6;
+      const maxAge = 3.2;       // seconds before fade out
+      // random position inside canvas with padding
+      const padding = 25;
+      const x = Math.random() * (CANVAS_W - 2*padding) + padding;
+      const y = Math.random() * (CANVAS_H - 2*padding) + padding;
+      // gentle random velocity (drift)
+      const vx = (Math.random() - 0.5) * 95;    // pixels per second
+      const vy = (Math.random() - 0.5) * 95;
+      
+      // vibrant color based on hue rotation
+      const hue = (Date.now() * 0.6 + Math.random() * 180) % 360;
+      const sat = 75 + Math.random() * 20;
+      const light = 60 + Math.random() * 25;
+      
+      orbs.push({
+        x, y, vx, vy,
+        radius: startRadius,
+        startRadius: startRadius,
+        minRadius: minRadius,
+        age: 0,
+        maxAge: maxAge,
+        hue: hue,
+        sat: sat,
+        light: light,
+      });
+    }
+    
+    // Add particles on hit
+    function addBurst(px, py, color){
+      const count = 9 + Math.floor(Math.random() * 8);
+      for(let i=0; i<count; i++){
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 70 + Math.random() * 150;
+        const vx = Math.cos(angle) * speed;
+        const vy = Math.sin(angle) * speed;
+        particles.push({
+          x: px, y: py, vx: vx, vy: vy,
+          life: 0.55,   // seconds
+          size: 2 + Math.random() * 4,
+          color: color || `hsl(${Math.random() * 60 + 200}, 80%, 65%)`
+        });
+      }
+    }
+    
+    // Floating text effect
+    function addFloatingText(x, y, textValue){
+      floatingTexts.push({
+        x: x, y: y, value: textValue,
+        life: 0.9,
+        vy: -38  // float upward speed (px/sec)
+      });
+    }
+    
+    // Process hit on orb (click/touch)
+    function handleHit(orbIndex, mouseX, mouseY){
+      if(!gameActive) return false;
+      const orb = orbs[orbIndex];
+      if(!orb) return false;
+      
+      // calculate points based on multiplier and base points (11 + bonus from small radius)
+      let basePoints = 11;
+      // small radius = extra challenge => tiny extra points
+      let sizeBonus = Math.floor((orb.startRadius - orb.radius) * 0.6);
+      sizeBonus = Math.min(5, Math.max(0, sizeBonus));
+      let pointGain = Math.floor((basePoints + sizeBonus) * multiplier);
+      pointGain = Math.max(5, pointGain);
+      
+      score += pointGain;
+      updateScoreUI();
+      
+      // Update multiplier: increase by 0.2 up to max
+      multiplier = Math.min(MAX_MULTIPLIER, multiplier + 0.2);
+      updateMultiplierUI();
+      
+      // reset combo timer
+      lastHitTimestamp = performance.now() / 1000;
+      
+      // add visual burst & floating text
+      const orbColor = `hsl(${orb.hue}, ${orb.sat}%, ${orb.light}%)`;
+      addBurst(orb.x, orb.y, orbColor);
+      addFloatingText(orb.x, orb.y - 8, `+${pointGain}`);
+      
+      // remove orb
+      orbs.splice(orbIndex,1);
+      return true;
+    }
+    
+    // ------------------- GAME MECHANICS UPDATE (delta time) -------------------
+    function updateGame(deltaSec){
+      if(!gameActive) return;
+      
+      // 1. Timer update
+      if(timeLeft > 0){
+        timeLeft -= deltaSec;
+        if(timeLeft <= 0){
+          timeLeft = 0;
+          gameActive = false;
+          saveHighScore();
+          updateTimerUI();
+          return;
+        }
+        updateTimerUI();
+      } else {
+        if(gameActive){
+          gameActive = false;
+          saveHighScore();
+        }
+        return;
+      }
+      
+      const now = performance.now() / 1000;
+      
+      // 2. Multiplier decay (if no hit recently)
+      if(lastHitTimestamp > 0 && (now - lastHitTimestamp) > COMBO_TIMEOUT){
+        let decayAmount = MULTIPLIER_DECAY_RATE * deltaSec;
+        multiplier = Math.max(1.0, multiplier - decayAmount);
+        updateMultiplierUI();
+      } else if(lastHitTimestamp === 0){
+        // initial state no hits, but keep multiplier at 1
+        multiplier = Math.max(1.0, multiplier - MULTIPLIER_DECAY_RATE * deltaSec * 0.5);
+        updateMultiplierUI();
+      }
+      
+      // 3. Update Orbs: movement, age shrink, edge bounce
+      for(let i=0; i<orbs.length; i++){
+        const o = orbs[i];
+        // move
+        o.x += o.vx * deltaSec;
+        o.y += o.vy * deltaSec;
+        // edge bounce (with radius margin)
+        const margin = o.radius;
+        if(o.x - margin < 0) { o.x = margin; o.vx = -o.vx; }
+        if(o.x + margin > CANVAS_W) { o.x = CANVAS_W - margin; o.vx = -o.vx; }
+        if(o.y - margin < 0) { o.y = margin; o.vy = -o.vy; }
+        if(o.y + margin > CANVAS_H) { o.y = CANVAS_H - margin; o.vy = -o.vy; }
+        
+        // age & radius shrink
+        o.age += deltaSec;
+        if(o.age >= o.maxAge){
+          orbs.splice(i,1);
+          i--;
+          continue;
+        }
+        const t = o.age / o.maxAge; // 0 -> 1
+        o.radius = o.startRadius - (o.startRadius - o.minRadius) * t;
+        o.radius = Math.max(o.minRadius, o.radius);
+      }
+      
+      // 4. Spawn logic (time-based)
+      if(lastSpawnTime === 0) lastSpawnTime = now;
+      if(now - lastSpawnTime >= spawnDelay){
+        lastSpawnTime = now;
+        spawnOrb(now);
+      }
+      
+      // 5. Particles update
+      for(let i=0; i<particles.length; i++){
+        const p = particles[i];
+        p.x += p.vx * deltaSec;
+        p.y += p.vy * deltaSec;
+        p.life -= deltaSec;
+        if(p.life <= 0){
+          particles.splice(i,1);
+          i--;
+        }
+      }
+      
+      // 6. Floating texts update
+      for(let i=0; i<floatingTexts.length; i++){
+        const ft = floatingTexts[i];
+        ft.y += ft.vy * deltaSec;
+        ft.life -= deltaSec;
+        if(ft.life <= 0){
+          floatingTexts.splice(i,1);
+          i--;
+        }
+      }
+    }
+    
+    // ------------------- DRAW EVERYTHING (NEBULA VISUALS) -------------------
+    function drawBackground(){
+      // deep space gradient
+      const grad = ctx.createLinearGradient(0, 0, CANVAS_W, CANVAS_H);
+      grad.addColorStop(0, '#030b17');
+      grad.addColorStop(0.5, '#07121f');
+      grad.addColorStop(1, '#01030c');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+      
+      // stars
+      ctx.fillStyle = 'white';
+      for(let i=0;i<300;i++){
+        if(i%2 === 0) continue; // pseudo random static stars
+        let sx = (i * 131) % CANVAS_W;
+        let sy = (i * 253) % CANVAS_H;
+        ctx.globalAlpha = 0.5 + Math.sin(i)*0.3;
+        ctx.beginPath();
+        ctx.arc(sx, sy, 1 + (i%3), 0, Math.PI*2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      // nebula clouds
+      ctx.globalCompositeOperation = 'lighter';
+      for(let i=0;i<3;i++){
+        ctx.beginPath();
+        ctx.ellipse(200 + i*300, 150 + i*120, 180, 100, 0, 0, Math.PI*2);
+        ctx.fillStyle = `rgba(40, 100, 200, 0.04)`;
+        ctx.fill();
+      }
+      ctx.globalCompositeOperation = 'source-over';
+    }
+    
+    function drawOrbs(){
+      for(const o of orbs){
+        const glowIntensity = 0.5 + Math.sin(Date.now() * 0.008 + o.hue) * 0.2;
+        // outer glow
+        ctx.shadowBlur = 18;
+        ctx.shadowColor = `hsl(${o.hue}, 85%, 65%)`;
+        ctx.beginPath();
+        const grad = ctx.createRadialGradient(o.x-3, o.y-3, 2, o.x, o.y, o.radius+2);
+        grad.addColorStop(0, `hsl(${o.hue}, ${o.sat}%, 75%)`);
+        grad.addColorStop(1, `hsl(${o.hue}, ${o.sat}%, 45%)`);
+        ctx.fillStyle = grad;
+        ctx.arc(o.x, o.y, o.radius, 0, Math.PI*2);
+        ctx.fill();
+        // inner core
+        ctx.shadowBlur = 12;
+        ctx.beginPath();
+        ctx.arc(o.x, o.y, o.radius*0.65, 0, Math.PI*2);
+        ctx.fillStyle = `hsl(${o.hue}, 90%, 70%)`;
+        ctx.fill();
+        // highlight
+        ctx.beginPath();
+        ctx.arc(o.x-2, o.y-2, o.radius*0.25, 0, Math.PI*2);
+        ctx.fillStyle = `rgba(255,255,245,0.7)`;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        // tiny ring
+        ctx.beginPath();
+        ctx.arc(o.x, o.y, o.radius+1, 0, Math.PI*2);
+        ctx.strokeStyle = `hsla(${o.hue}, 90%, 70%, 0.5)`;
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+      }
+    }
+    
+    function drawParticles(){
+      for(const p of particles){
+        ctx.globalAlpha = Math.min(1, p.life * 1.5);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size * (0.5 + p.life), 0, Math.PI*2);
+        ctx.fillStyle = p.color;
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
+    
+    function drawFloatingTexts(){
+      for(const ft of floatingTexts){
+        ctx.font = `bold ${24 + (1-ft.life)*8}px "Orbitron", monospace`;
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = "#00ffff";
+        ctx.fillStyle = `rgba(255, 220, 100, ${Math.min(1, ft.life*1.2)})`;
+        ctx.fillText(ft.value, ft.x-15, ft.y-12);
+        ctx.shadowBlur = 0;
+      }
+    }
+    
+    function drawUIonCanvas(){
+      if(!gameActive && timeLeft <= 0){
+        ctx.font = "bold 40px 'Orbitron'";
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = "#b9f6ff";
+        ctx.shadowColor = "#0a6c8c";
+        ctx.fillText("✦ GAME OVER ✦", CANVAS_W/2-140, CANVAS_H/2-50);
+        ctx.font = "22px monospace";
+        ctx.fillStyle = "#98d9ff";
+        ctx.fillText("click NEW STRIKE", CANVAS_W/2-100, CANVAS_H/2+30);
+      } else if(!gameActive && timeLeft > 0){
+        ctx.font = "bold 28px 'Orbitron'";
+        ctx.fillStyle = "#99ccff";
+        ctx.fillText("⚡ PRESS [NEW STRIKE] ⚡", CANVAS_W/2-165, CANVAS_H/2);
+      }
+      
+      // multiplier ring (combo indicator)
+      if(gameActive && multiplier > 1){
+        ctx.font = "bold 18px monospace";
+        ctx.fillStyle = "#ffcc88";
+        ctx.shadowBlur = 5;
+        ctx.fillText("🔥 COMBO ACTIVE", CANVAS_W-145, 45);
+        ctx.shadowBlur = 0;
+      }
+    }
+    
+    // ------------------- RENDERING LOOP -------------------
+    let lastRenderTime = 0;
+    function gameLoop(nowMs){
+      const nowSec = nowMs / 1000;
+      let delta = Math.min(0.033, (lastRenderTime ? (nowSec - lastRenderTime) : 0.016));
+      if(delta <= 0) delta = 0.016;
+      
+      if(gameActive){
+        updateGame(delta);
+      }
+      
+      // draw all
+      drawBackground();
+      drawOrbs();
+      drawParticles();
+      drawFloatingTexts();
+      drawUIonCanvas();
+      
+      // extra effect: show spawn hint if needed
+      if(gameActive && orbs.length === 0 && timeLeft > 0){
+        ctx.font = "italic 16px monospace";
+        ctx.fillStyle = "#2fbbccaa";
+        ctx.fillText("→ orbs drifting in ←", CANVAS_W/2-100, 80);
+      }
+      
+      lastRenderTime = nowSec;
+      animationId = requestAnimationFrame(gameLoop);
+    }
+    
+    // ------------------- EVENT HANDLERS (mouse + touch) -------------------
+    function getCanvasCoords(e){
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;   // logical width 1000 / displayed width
+      const scaleY = canvas.height / rect.height;
+      let clientX, clientY;
+      if(e.touches){
+        if(e.touches.length === 0) return null;
+        clientX = e.touches[0].clientX;
+        clientY = e.touches[0].clientY;
+        e.preventDefault();
+      } else {
+        clientX = e.clientX;
+        clientY = e.clientY;
+      }
+      let canvasX = (clientX - rect.left) * scaleX;
+      let canvasY = (clientY - rect.top) * scaleY;
+      canvasX = Math.min(Math.max(0, canvasX), CANVAS_W);
+      canvasY = Math.min(Math.max(0, canvasY), CANVAS_H);
+      return { x: canvasX, y: canvasY };
+    }
+    
+    function onGameClick(e){
+      if(!gameActive) return;
+      const coords = getCanvasCoords(e);
+      if(!coords) return;
+      const clickX = coords.x;
+      const clickY = coords.y;
+      
+      // find orb hit (from back to front? doesn't matter, pick first encountered)
+      let hitIndex = -1;
+      for(let i=orbs.length-1; i>=0; i--){
+        const orb = orbs[i];
+        const dx = clickX - orb.x;
+        const dy = clickY - orb.y;
+        const dist = Math.sqrt(dx*dx+dy*dy);
+        if(dist <= orb.radius){
+          hitIndex = i;
+          break;
+        }
+      }
+      if(hitIndex !== -1){
+        handleHit(hitIndex, clickX, clickY);
+        // additional tiny screen shake effect? just visual pulse
+        canvas.style.transform = "scale(0.99)";
+        setTimeout(()=>{ if(canvas) canvas.style.transform = ""; }, 70);
+      } else {
+        // missed shot -> small penalty: multiplier reduces slightly (0.08)
+        if(gameActive){
+          multiplier = Math.max(1.0, multiplier - 0.12);
+          updateMultiplierUI();
+          // show miss feedback
+          addFloatingText(clickX, clickY-10, "miss");
+        }
+      }
+    }
+    
+    function resetAndStartGame(){
+      // kill active game and reset all
+      gameActive = false;
+      // reset data
+      score = 0;
+      multiplier = 1.0;
+      timeLeft = 30.0;
+      orbs = [];
+      particles = [];
+      floatingTexts = [];
+      lastHitTimestamp = performance.now() / 1000;
+      lastSpawnTime = performance.now() / 1000;
+      
+      updateScoreUI();
+      updateMultiplierUI();
+      updateTimerUI();
+      
+      // spawn a few initial orbs to make it juicy
+      gameActive = true;
+      // pre-spawn 3 orbs for action
+      const nowPerf = performance.now() / 1000;
+      lastSpawnTime = nowPerf - 0.3;
+      for(let i=0;i<3;i++){
+        spawnOrb(nowPerf);
+      }
+      // ensure timer display active
+      saveHighScore(); // but don't override high on reset, just in case
+      updateHighScoreUI();
+    }
+    
+    // restart with button
+    function restartGame(){
+      if(gameActive){
+        // just reset fully
+      }
+      resetAndStartGame();
+    }
+    
+    // ------------------- INITIALIZE EVENT LISTENERS & START -------------------
+    function attachEvents(){
+      canvas.addEventListener('mousedown', onGameClick);
+      canvas.addEventListener('touchstart', onGameClick, {passive: false});
+      const resetBtn = document.getElementById('resetGameBtn');
+      resetBtn.addEventListener('click', () => {
+        restartGame();
+      });
+    }
+    
+    // Set initial inactive but pretty demo screen
+    function initialSetup(){
+      attachEvents();
+      updateHighScoreUI();
+      updateScoreUI();
+      updateMultiplierUI();
+      updateTimerUI();
+      // not active but draw some demo particles? not needed
+      gameActive = false;
+      // placeholder demo orbs for style? leave empty
+      // start animation loop
+      animationId = requestAnimationFrame(gameLoop);
+      // show intro
+      setTimeout(()=>{
+        // just to draw nice canvas
+      },10);
+    }
+    
+    initialSetup();
+  })();
+</script>
+</body>
+</html>
